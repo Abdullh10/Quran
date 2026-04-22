@@ -92,7 +92,7 @@
             <!-- Search & Filters -->
             <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 no-print">
                 <div class="relative w-full md:w-96">
-                    <input type="text" id="searchSurah" placeholder="ابحث عن سورة..." class="w-full p-3 pr-10 rounded-xl border-none shadow-sm focus:ring-2 focus:ring-emerald-500">
+                    <input type="text" id="searchSurah" oninput="handleSearch(this.value)" placeholder="ابحث عن سورة..." class="w-full p-3 pr-10 rounded-xl border-none shadow-sm focus:ring-2 focus:ring-emerald-500">
                     <span class="absolute right-3 top-3 text-gray-400">🔍</span>
                 </div>
                 <div class="flex gap-2">
@@ -129,12 +129,12 @@
         </div>
     </div>
 
-    <!-- AI & Success Modals (Same as before) -->
+    <!-- AI & Success Modals -->
     <div id="ai-modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50 p-4 backdrop-blur-sm no-print">
         <div class="bg-white rounded-3xl p-8 max-w-lg w-full max-h-[80vh] overflow-y-auto shadow-2xl relative">
             <button onclick="closeAIModal()" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600">✕</button>
             <div id="ai-loading" class="hidden py-10 text-center"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div></div>
-            <div id="ai-content" class="text-gray-700 leading-relaxed space-y-4"></div>
+            <div id="ai-content" class="text-gray-700 leading-relaxed space-y-4 whitespace-pre-wrap"></div>
         </div>
     </div>
 
@@ -166,11 +166,12 @@
         let progress = JSON.parse(localStorage.getItem('quran_progress')) || {};
         let studentData = JSON.parse(localStorage.getItem('student_info')) || { name: '', level: '' };
         let currentTargetSurah = null;
+        let currentFilter = 'all';
 
         function init() {
             document.getElementById('studentName').value = studentData.name || "";
             document.getElementById('studentLevel').value = studentData.level || "";
-            renderSurahs(surahs);
+            renderSurahs();
             updateGlobalProgress();
         }
 
@@ -183,13 +184,30 @@
             localStorage.setItem('quran_progress', JSON.stringify(progress));
         }
 
-        function renderSurahs(data) {
+        function handleSearch(term) {
+            const filtered = surahs.filter(s => s.name.includes(term));
+            renderSurahs(filtered);
+        }
+
+        function filterSurahs(type) {
+            currentFilter = type;
+            renderSurahs();
+        }
+
+        function renderSurahs(data = null) {
             const container = document.getElementById('surah-container');
             container.innerHTML = '';
             
-            data.forEach(surah => {
+            let source = data || surahs;
+            
+            if (currentFilter === 'completed') {
+                source = source.filter(s => progress[s.id]?.saved);
+            }
+
+            source.forEach(surah => {
                 const state = progress[surah.id] || { saved: false, mastery: 0, badge: null };
                 const card = document.createElement('div');
+                card.id = `card-${surah.id}`;
                 card.className = `surah-card bg-white p-5 rounded-2xl shadow-sm relative ${state.saved ? 'border-emerald-200 ring-1 ring-emerald-100' : 'opacity-80'}`;
                 
                 card.innerHTML = `
@@ -214,16 +232,52 @@
                         </div>
                     </div>
                     <div>
-                        <div class="flex justify-between text-[10px] mb-1 text-gray-400"><span>الإتقان</span><span>${state.mastery}%</span></div>
-                        <input type="range" min="0" max="100" value="${state.mastery}" oninput="updateMastery(${surah.id}, this.value)" class="w-full h-1 bg-gray-100 rounded-lg appearance-none accent-emerald-500 no-print">
+                        <div class="flex justify-between text-[10px] mb-1 text-gray-400">
+                            <span>الإتقان</span>
+                            <span id="mastery-text-${surah.id}">${state.mastery}%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="${state.mastery}" 
+                               oninput="updateMasteryUI(${surah.id}, this.value)" 
+                               onchange="updateMasteryFinal(${surah.id}, this.value)"
+                               class="w-full h-1 bg-gray-100 rounded-lg appearance-none accent-emerald-500 no-print">
                     </div>
-                    <div class="mt-3 flex gap-0.5 justify-center">${renderStars(state.mastery)}</div>
+                    <div class="mt-3 flex gap-0.5 justify-center" id="stars-container-${surah.id}">
+                        ${renderStars(state.mastery)}
+                    </div>
                     <div class="mt-2 text-center no-print">
                         <button onclick="getSurahAITips('${surah.name}')" class="text-[9px] text-emerald-400 hover:text-emerald-600 transition">نصيحة ذكية ✨</button>
                     </div>
                 `;
                 container.appendChild(card);
             });
+        }
+
+        // Mastery Updates
+        function updateMasteryUI(id, val) {
+            // Live update text and stars while sliding
+            document.getElementById(`mastery-text-${id}`).innerText = val + '%';
+            document.getElementById(`stars-container-${id}`).innerHTML = renderStars(val);
+        }
+
+        function updateMasteryFinal(id, val) {
+            // Save to storage only when user finishes sliding
+            if (!progress[id]) progress[id] = { saved: false, mastery: 0, badge: null };
+            progress[id].mastery = parseInt(val);
+            
+            // If mastery is high, mark as saved automatically if not already
+            if (val > 0 && !progress[id].saved) {
+                progress[id].saved = true;
+                const card = document.getElementById(`card-${id}`);
+                card.classList.add('border-emerald-200', 'ring-1', 'ring-emerald-100');
+                card.classList.remove('opacity-80');
+                const checkbox = document.getElementById(`check-${id}`);
+                if (checkbox) checkbox.checked = true;
+                const label = document.querySelector(`label[for="check-${id}"]`);
+                if (label) label.innerText = 'محفوظ ✓';
+                updateGlobalProgress();
+            }
+            
+            saveAllData();
         }
 
         // Badge Per Surah Logic
@@ -244,30 +298,34 @@
                 if (!progress[currentTargetSurah]) progress[currentTargetSurah] = { saved: false, mastery: 0 };
                 progress[currentTargetSurah].badge = icon;
                 saveAllData();
-                renderSurahs(surahs); // Refresh grid
+                renderSurahs(); 
                 closeBadgeModal();
             }
         }
 
         function renderStars(percent) {
-            let s = ''; const count = Math.ceil(percent / 20);
-            for(let i=1; i<=5; i++) s += `<span class="${i <= count ? 'text-yellow-400' : 'text-gray-200'} text-xs">★</span>`;
+            let s = ''; 
+            const count = Math.ceil(percent / 20);
+            for(let i=1; i<=5; i++) {
+                s += `<span class="${i <= count ? 'text-yellow-400' : 'text-gray-200'} text-xs">★</span>`;
+            }
             return s;
         }
 
         function toggleSaved(id) {
             if (!progress[id]) progress[id] = { saved: false, mastery: 0, badge: null };
             progress[id].saved = !progress[id].saved;
-            if (progress[id].saved && progress[id].mastery === 0) progress[id].mastery = 100;
+            
+            // If saved is checked but mastery is 0, bump it to 100 for convenience
+            if (progress[id].saved && progress[id].mastery === 0) {
+                progress[id].mastery = 100;
+            } else if (!progress[id].saved) {
+                progress[id].mastery = 0;
+            }
+            
             saveAllData();
             updateGlobalProgress();
-            renderSurahs(surahs);
-        }
-
-        function updateMastery(id, val) {
-            if (!progress[id]) progress[id] = { saved: false, mastery: 0, badge: null };
-            progress[id].mastery = parseInt(val);
-            saveAllData();
+            renderSurahs();
         }
 
         function updateGlobalProgress() {
@@ -279,7 +337,14 @@
 
         function exportToPDF() {
             const element = document.getElementById('capture-area');
-            html2pdf().from(element).save(`تقرير_حفظ_${studentData.name || 'طالب'}.pdf`);
+            const opt = {
+                margin: 1,
+                filename: `تقرير_حفظ_${studentData.name || 'طالب'}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
         }
 
         function clearProgress() {
@@ -298,17 +363,23 @@
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
                 const result = await response.json();
-                return result.candidates?.[0]?.content?.parts?.[0]?.text || "نصيحة: داوم على المراجعة.";
-            } catch (e) { return "حاول لاحقاً."; }
+                return result.candidates?.[0]?.content?.parts?.[0]?.text || "نصيحة: داوم على المراجعة الدورية لضمان تثبيت الحفظ.";
+            } catch (e) { 
+                return "حدث خطأ في الاتصال، لكن تذكر أن التكرار هو سر الإتقان."; 
+            }
         }
 
         async function getSurahAITips(surahName) {
-            document.getElementById('ai-content').innerHTML = '';
+            const contentArea = document.getElementById('ai-content');
+            contentArea.innerText = '';
             document.getElementById('ai-loading').classList.remove('hidden');
             document.getElementById('ai-modal').classList.remove('hidden');
-            const content = await geminiAI(`قدم نصيحة تربوية قصيرة جداً لحفظ سورة ${surahName}`);
+            
+            const prompt = `قدم نصيحة تربوية وتحفيزية قصيرة وعملية جداً لطالب يحفظ سورة ${surahName} من جزء عم. اجعل النصيحة ودودة ومشجعة باللغة العربية.`;
+            const content = await geminiAI(prompt);
+            
             document.getElementById('ai-loading').classList.add('hidden');
-            document.getElementById('ai-content').innerText = content;
+            contentArea.innerText = content;
         }
 
         function closeAIModal() { document.getElementById('ai-modal').classList.add('hidden'); }
