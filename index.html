@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>متابعة حفظ جزء عم - المساعد الذكي</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@300;500;800&display=swap" rel="stylesheet">
     <style>
         body {
@@ -39,10 +38,6 @@
         @media print {
             .no-print { display: none !important; }
         }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 10px; }
-        
         #sync-toast {
             position: fixed;
             bottom: 20px;
@@ -92,10 +87,10 @@
                                 <div id="total-progress-bar" class="bg-yellow-400 h-3 rounded-full transition-all duration-1000" style="width: 0%"></div>
                             </div>
                             <div class="flex gap-2 mt-4 no-print">
-                                <button onclick="saveToCloud()" class="flex-[2] px-4 py-2 bg-emerald-500 border border-emerald-300 text-white rounded-full text-xs font-bold hover:bg-emerald-400 transition flex items-center justify-center gap-2 shadow-sm">
+                                <button id="btnSaveCloud" class="flex-[2] px-4 py-2 bg-emerald-500 border border-emerald-300 text-white rounded-full text-xs font-bold hover:bg-emerald-400 transition flex items-center justify-center gap-2 shadow-sm">
                                    <span>حفظ التقدم سحابياً</span> ☁️
                                 </button>
-                                <button onclick="exportToPDF()" class="flex-1 px-3 py-2 bg-emerald-600 border border-emerald-400 text-white rounded-full text-xs font-bold hover:bg-emerald-500 transition">
+                                <button onclick="window.print()" class="flex-1 px-3 py-2 bg-emerald-600 border border-emerald-400 text-white rounded-full text-xs font-bold hover:bg-emerald-500 transition">
                                    PDF 📄
                                 </button>
                             </div>
@@ -107,7 +102,7 @@
 
         <main class="max-w-6xl mx-auto px-4">
             
-            <!-- Dynamic Daily Ward Section -->
+            <!-- Daily Ward -->
             <section class="mb-10 no-print">
                 <div class="bg-white rounded-3xl p-6 shadow-sm border border-emerald-100">
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
@@ -115,7 +110,7 @@
                             <span class="text-3xl">📅</span>
                             <div>
                                 <h2 class="text-2xl font-bold text-emerald-800">وِرد اليوم المتعدد</h2>
-                                <p class="text-xs text-gray-500">حدد قائمة السور والآيات التي تنوي حفظها اليوم</p>
+                                <p class="text-xs text-gray-500">حدد قائمة السور والآيات اليومية (<span id="wardCount">0</span> سور)</p>
                             </div>
                         </div>
                         
@@ -133,10 +128,10 @@
                         <div class="lg:col-span-8 space-y-4">
                             <div id="ward-list" class="space-y-3"></div>
                             <div class="flex flex-wrap gap-3 pt-2">
-                                <button onclick="addNewWardItem()" class="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-bold border border-emerald-100 hover:bg-emerald-100 transition">
-                                    <span>إضافة سورة للورد</span> ➕
+                                <button id="btnAddWard" class="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-bold border border-emerald-100 hover:bg-emerald-100 transition">
+                                    <span>إضافة سورة</span> ➕
                                 </button>
-                                <button id="btnCompleteWard" onclick="markWardComplete()" class="px-8 py-2 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition shadow-md">
+                                <button id="btnCompleteWard" class="px-8 py-2 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition shadow-md">
                                     تم إنجاز الورد كاملاً 🎉
                                 </button>
                             </div>
@@ -146,12 +141,12 @@
                             <h4 class="font-bold text-emerald-800 mb-4 border-b pb-2 text-sm">ملخص الإنجاز</h4>
                             <div class="space-y-4">
                                 <div class="flex justify-between items-center">
-                                    <span class="text-xs text-gray-600">آخر تاريخ إنجاز:</span>
+                                    <span class="text-xs text-gray-600">تاريخ الإنجاز:</span>
                                     <span id="lastAchievementDate" class="text-xs font-bold text-emerald-600">--</span>
                                 </div>
                                 <div class="flex justify-between items-center">
-                                    <span class="text-xs text-gray-600 text-[10px]">حالة السحابة:</span>
-                                    <span id="cloud-status" class="text-[10px] font-bold text-emerald-600 italic">غير متصل</span>
+                                    <span class="text-xs text-gray-600 text-[10px]">السحابة:</span>
+                                    <span id="cloud-status" class="text-[10px] font-bold text-emerald-600 italic">جاري التجهيز...</span>
                                 </div>
                             </div>
                         </div>
@@ -159,38 +154,37 @@
                 </div>
             </section>
 
-            <!-- Grid -->
+            <!-- Surah Grid -->
             <div id="surah-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </main>
     </div>
 
-    <!-- Modals -->
+    <!-- Badge Modal -->
     <div id="badge-modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50 p-4 backdrop-blur-sm">
         <div class="bg-white rounded-3xl p-6 max-w-sm w-full">
             <h2 class="text-xl font-bold text-emerald-800 mb-4">تحفيز للسورة</h2>
             <div class="grid grid-cols-4 gap-4 mb-8">
-                <button onclick="assignBadgeToSurah('⭐')" class="p-4 bg-gray-50 rounded-2xl text-3xl">⭐</button>
-                <button onclick="assignBadgeToSurah('🏆')" class="p-4 bg-gray-50 rounded-2xl text-3xl">🏆</button>
-                <button onclick="assignBadgeToSurah('💎')" class="p-4 bg-gray-50 rounded-2xl text-3xl">💎</button>
-                <button onclick="assignBadgeToSurah('🏅')" class="p-4 bg-gray-50 rounded-2xl text-3xl">🏅</button>
+                <button onclick="window.assignBadgeToSurah('⭐')" class="p-4 bg-gray-50 rounded-2xl text-3xl">⭐</button>
+                <button onclick="window.assignBadgeToSurah('🏆')" class="p-4 bg-gray-50 rounded-2xl text-3xl">🏆</button>
+                <button onclick="window.assignBadgeToSurah('💎')" class="p-4 bg-gray-50 rounded-2xl text-3xl">💎</button>
+                <button onclick="window.assignBadgeToSurah('🏅')" class="p-4 bg-gray-50 rounded-2xl text-3xl">🏅</button>
             </div>
-            <button onclick="closeBadgeModal()" class="w-full py-3 bg-gray-100 rounded-xl font-bold">إلغاء</button>
+            <button onclick="window.closeBadgeModal()" class="w-full py-3 bg-gray-100 rounded-xl font-bold">إلغاء</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase Setup
+        // Config
         const firebaseConfig = JSON.parse(__firebase_config);
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'juz-amma-tracker-v1';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'juz-amma-tracker-fixed';
 
-        // Local State
         const surahs = [
             { id: 114, name: "الناس", verses: 6 }, { id: 113, name: "الفلق", verses: 5 },
             { id: 112, name: "الإخلاص", verses: 4 }, { id: 111, name: "المسد", verses: 5 },
@@ -221,100 +215,18 @@
         };
 
         let user = null;
+        let currentSId = null;
 
-        // Auth initialization
-        const initAuth = async () => {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (err) {
-                console.error("Auth error", err);
-            }
-        };
-
-        onAuthStateChanged(auth, (u) => {
-            user = u;
-            if (user) {
-                document.getElementById('cloud-status').innerText = "متصل سحابياً ✅";
-                loadFromCloud();
-            }
-        });
-
-        const showToast = (msg, duration = 3000) => {
+        const showToast = (msg) => {
             const toast = document.getElementById('sync-toast');
             document.getElementById('toast-msg').innerText = msg;
             toast.style.display = 'flex';
-            setTimeout(() => { toast.style.display = 'none'; }, duration);
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
         };
 
-        // Cloud Operations
-        window.saveToCloud = async () => {
-            if (!user) { showToast("يجب تسجيل الدخول أولاً"); return; }
-            showToast("جاري المزامنة...");
-            
-            // Collect data from UI for current state
-            state.studentInfo.name = document.getElementById('studentName').value;
-            state.studentInfo.level = document.getElementById('studentLevel').value;
-
-            try {
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'main_tracker');
-                await setDoc(docRef, {
-                    ...state,
-                    updatedAt: new Date().toISOString(),
-                    userId: user.uid
-                });
-                showToast("تم الحفظ سحابياً بنجاح! ✨");
-            } catch (err) {
-                showToast("خطأ في الحفظ");
-                console.error(err);
-            }
-        };
-
-        const loadFromCloud = async () => {
-            try {
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'main_tracker');
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    state = { ...state, ...data };
-                    // Apply to UI
-                    document.getElementById('studentName').value = state.studentInfo.name || '';
-                    document.getElementById('studentLevel').value = state.studentInfo.level || '';
-                    renderWardList();
-                    renderSurahs();
-                    updateGlobalProgress();
-                    checkWardStatus();
-                    showToast("تم تحميل البيانات السحابية 📥");
-                } else {
-                    // Fallback to local storage if no cloud data exists yet
-                    loadLocal();
-                }
-            } catch (err) {
-                console.error("Load error", err);
-                loadLocal();
-            }
-        };
-
-        const loadLocal = () => {
-            state.progress = JSON.parse(localStorage.getItem('quran_progress')) || {};
-            state.studentInfo = JSON.parse(localStorage.getItem('student_info')) || { name: '', level: '' };
-            state.multiWard = JSON.parse(localStorage.getItem('multi_ward_list')) || [{ id: Date.now(), surahId: 114, vFrom: 1, vTo: 6 }];
-            state.streak = JSON.parse(localStorage.getItem('streak_data')) || { streak: 0, lastDate: null };
-            
-            document.getElementById('studentName').value = state.studentInfo.name;
-            document.getElementById('studentLevel').value = state.studentInfo.level;
-            renderWardList();
-            renderSurahs();
-            updateGlobalProgress();
-            checkWardStatus();
-        };
-
-        // UI Logic
         const renderWardList = () => {
             const container = document.getElementById('ward-list');
+            if (!container) return;
             container.innerHTML = '';
             state.multiWard.forEach(item => {
                 const div = document.createElement('div');
@@ -332,58 +244,19 @@
                 `;
                 container.appendChild(div);
             });
-            attachWardEvents();
-            document.getElementById('wardCount').innerText = state.multiWard.length;
-        };
-
-        const attachWardEvents = () => {
+            
             document.querySelectorAll('.ward-select').forEach(el => el.onchange = (e) => updateWardItem(e.target.dataset.id, 'surahId', e.target.value));
             document.querySelectorAll('.vfrom-input').forEach(el => el.oninput = (e) => updateWardItem(e.target.dataset.id, 'vFrom', e.target.value));
             document.querySelectorAll('.vto-input').forEach(el => el.oninput = (e) => updateWardItem(e.target.dataset.id, 'vTo', e.target.value));
             document.querySelectorAll('.remove-ward').forEach(el => el.onclick = (e) => removeWardItem(e.target.dataset.id));
-        };
-
-        window.addNewWardItem = () => {
-            state.multiWard.push({ id: Date.now(), surahId: 114, vFrom: 1, vTo: 5 });
-            renderWardList();
-        };
-
-        const updateWardItem = (id, field, val) => {
-            const idx = state.multiWard.findIndex(i => i.id == id);
-            if (idx !== -1) state.multiWard[idx][field] = parseInt(val);
-        };
-
-        const removeWardItem = (id) => {
-            if (state.multiWard.length > 1) {
-                state.multiWard = state.multiWard.filter(i => i.id != id);
-                renderWardList();
-            }
-        };
-
-        window.markWardComplete = () => {
-            const today = new Date().toDateString();
-            if (state.streak.lastDate === today) return;
-            const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
-            state.streak.streak = (state.streak.lastDate === yesterday.toDateString()) ? state.streak.streak + 1 : 1;
-            state.streak.lastDate = today;
-            checkWardStatus();
-            document.getElementById('streakCount').innerText = state.streak.streak;
-            document.getElementById('lastAchievementDate').innerText = today;
-            showToast("بطل! استمر في الحفظ 🔥");
-        };
-
-        const checkWardStatus = () => {
-            const btn = document.getElementById('btnCompleteWard');
-            const today = new Date().toDateString();
-            document.getElementById('streakCount').innerText = state.streak.streak;
-            document.getElementById('lastAchievementDate').innerText = state.streak.lastDate || "--";
-            if (state.streak.lastDate === today) {
-                btn.disabled = true; btn.innerText = "تم إنجاز الورد ✅"; btn.classList.add('opacity-50');
-            }
+            
+            const wardCountEl = document.getElementById('wardCount');
+            if (wardCountEl) wardCountEl.innerText = state.multiWard.length;
         };
 
         const renderSurahs = () => {
             const container = document.getElementById('surah-container');
+            if (!container) return;
             container.innerHTML = '';
             surahs.forEach(surah => {
                 const s = state.progress[surah.id] || { saved: false, mastery: 0, badge: null };
@@ -400,16 +273,13 @@
                     </div>
                     <input type="range" min="0" max="100" value="${s.mastery}" class="mastery-range w-full h-1 bg-gray-100 rounded-lg appearance-none accent-emerald-500" data-id="${surah.id}">
                     <div class="mt-4 flex gap-2 no-print">
-                        <button class="flex-1 py-2 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-xl info-btn" data-name="${surah.name}">تفسير ✨</button>
-                        <button class="p-2 bg-yellow-50 rounded-xl badge-btn" data-id="${surah.id}">🎁</button>
+                        <button class="flex-1 py-2 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-xl" onclick="alert('سورة ${surah.name}: ${surah.verses} آية')">معلومات 📖</button>
+                        <button class="p-2 bg-yellow-50 rounded-xl badge-trigger" data-id="${surah.id}">🎁</button>
                     </div>
                 `;
                 container.appendChild(card);
             });
-            attachSurahEvents();
-        };
 
-        const attachSurahEvents = () => {
             document.querySelectorAll('.toggle-saved').forEach(el => el.onchange = (e) => {
                 const id = e.target.dataset.id;
                 if (!state.progress[id]) state.progress[id] = { saved: false, mastery: 0 };
@@ -424,19 +294,78 @@
                 state.progress[id].saved = state.progress[id].mastery > 0;
                 renderSurahs(); updateGlobalProgress();
             });
-            document.querySelectorAll('.info-btn').forEach(el => el.onclick = (e) => getSurahFullInfo(e.target.dataset.name));
-            document.querySelectorAll('.badge-btn').forEach(el => el.onclick = (e) => openBadgeModal(e.target.dataset.id));
+            document.querySelectorAll('.badge-trigger').forEach(el => el.onclick = (e) => window.openBadgeModal(e.target.dataset.id));
         };
 
         const updateGlobalProgress = () => {
-            const saved = Object.values(state.progress).filter(p => p.saved).length;
-            const pct = Math.round((saved / surahs.length) * 100);
+            const savedCount = Object.values(state.progress).filter(p => p.saved).length;
+            const pct = Math.round((savedCount / surahs.length) * 100);
             document.getElementById('total-percent').innerText = pct + '%';
             document.getElementById('total-progress-bar').style.width = pct + '%';
         };
 
-        // Badge Modal
-        let currentSId = null;
+        const updateWardItem = (id, field, val) => {
+            const idx = state.multiWard.findIndex(i => i.id == id);
+            if (idx !== -1) state.multiWard[idx][field] = parseInt(val);
+        };
+
+        const removeWardItem = (id) => {
+            if (state.multiWard.length > 1) {
+                state.multiWard = state.multiWard.filter(i => i.id != id);
+                renderWardList();
+            }
+        };
+
+        // Cloud Operations
+        const saveToCloud = async () => {
+            if (!user) { showToast("يجب الاتصال أولاً"); return; }
+            showToast("جاري المزامنة...");
+            state.studentInfo.name = document.getElementById('studentName').value;
+            state.studentInfo.level = document.getElementById('studentLevel').value;
+
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'cloud_storage', 'v1', 'tracker');
+                await setDoc(docRef, { ...state, updatedAt: new Date().toISOString() });
+                showToast("تم الحفظ سحابياً بنجاح! ✨");
+            } catch (err) {
+                console.error("Save error", err);
+                showToast("خطأ أثناء الحفظ");
+            }
+        };
+
+        const loadFromCloud = async () => {
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'cloud_storage', 'v1', 'tracker');
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    state = { ...state, ...docSnap.data() };
+                    document.getElementById('studentName').value = state.studentInfo.name || '';
+                    document.getElementById('studentLevel').value = state.studentInfo.level || '';
+                    showToast("تم استعادة بياناتك 📥");
+                }
+                renderWardList();
+                renderSurahs();
+                updateGlobalProgress();
+                checkWardStatus();
+            } catch (err) {
+                console.error("Load error", err);
+                renderWardList(); renderSurahs(); updateGlobalProgress();
+            }
+        };
+
+        const checkWardStatus = () => {
+            const btn = document.getElementById('btnCompleteWard');
+            const today = new Date().toDateString();
+            document.getElementById('streakCount').innerText = state.streak.streak;
+            document.getElementById('lastAchievementDate').innerText = state.streak.lastDate || "--";
+            if (state.streak.lastDate === today) {
+                btn.disabled = true; btn.innerText = "تم إنجاز الورد ✅"; btn.classList.add('opacity-50');
+            } else {
+                btn.disabled = false; btn.innerText = "تم إنجاز الورد كاملاً 🎉"; btn.classList.remove('opacity-50');
+            }
+        };
+
+        // Modal Controls
         window.openBadgeModal = (id) => { currentSId = id; document.getElementById('badge-modal').classList.remove('hidden'); };
         window.closeBadgeModal = () => document.getElementById('badge-modal').classList.add('hidden');
         window.assignBadgeToSurah = (b) => {
@@ -447,7 +376,46 @@
             }
         };
 
-        window.exportToPDF = () => window.print();
+        // Events
+        document.getElementById('btnSaveCloud').onclick = saveToCloud;
+        document.getElementById('btnAddWard').onclick = () => {
+            state.multiWard.push({ id: Date.now(), surahId: 114, vFrom: 1, vTo: 5 });
+            renderWardList();
+        };
+        document.getElementById('btnCompleteWard').onclick = () => {
+            const today = new Date().toDateString();
+            if (state.streak.lastDate === today) return;
+            
+            const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+            if (state.streak.lastDate === yesterday.toDateString()) {
+                state.streak.streak += 1;
+            } else {
+                state.streak.streak = 1;
+            }
+            
+            state.streak.lastDate = today;
+            checkWardStatus();
+            showToast("بطل! استمر في الحفظ 🔥");
+        };
+
+        // Auth
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (err) { console.error("Auth failed", err); }
+        };
+
+        onAuthStateChanged(auth, (u) => {
+            user = u;
+            if (user) {
+                document.getElementById('cloud-status').innerText = "متصل ✅";
+                loadFromCloud();
+            }
+        });
 
         initAuth();
     </script>
