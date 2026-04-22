@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>متابعة حفظ جزء عم</title>
+    <title>متابعة حفظ جزء عم - المساعد الذكي</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@300;500;800&display=swap" rel="stylesheet">
     <style>
@@ -29,6 +29,11 @@
         }
         input::placeholder {
             color: rgba(255, 255, 255, 0.6);
+        }
+        .gemini-gradient {
+            background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
     </style>
 </head>
@@ -64,12 +69,13 @@
                         <div class="w-full bg-white/20 rounded-full h-4">
                             <div id="total-progress-bar" class="bg-yellow-400 h-4 rounded-full transition-all duration-1000" style="width: 0%"></div>
                         </div>
-                        <p class="text-xs mt-2 text-emerald-200" id="stats-text">لم يتم البدء بعد</p>
+                        <button onclick="generateRevisionPlan()" class="mt-4 px-4 py-2 bg-white text-emerald-700 rounded-full text-sm font-bold hover:bg-yellow-400 transition flex items-center justify-center gap-2 w-full">
+                           <span>خطة مراجعة ذكية ✨</span>
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- Decorative Circle -->
         <div class="absolute -top-24 -right-24 w-64 h-64 bg-emerald-600 rounded-full opacity-50"></div>
     </header>
 
@@ -81,9 +87,9 @@
                 <span class="absolute right-3 top-3 text-gray-400">🔍</span>
             </div>
             <div class="flex gap-2">
-                <button onclick="filterSurahs('all')" class="px-4 py-2 bg-white rounded-lg shadow-sm hover:bg-emerald-50 text-sm font-bold border border-transparent focus:border-emerald-500">الكل</button>
-                <button onclick="filterSurahs('completed')" class="px-4 py-2 bg-white rounded-lg shadow-sm hover:bg-emerald-50 text-sm font-bold text-emerald-600 border border-transparent focus:border-emerald-500">المحفوظ</button>
-                <button onclick="filterSurahs('pending')" class="px-4 py-2 bg-white rounded-lg shadow-sm hover:bg-emerald-50 text-sm font-bold text-orange-600 border border-transparent focus:border-emerald-500">قيد الحفظ</button>
+                <button onclick="filterSurahs('all')" class="px-4 py-2 bg-white rounded-lg shadow-sm hover:bg-emerald-50 text-sm font-bold">الكل</button>
+                <button onclick="filterSurahs('completed')" class="px-4 py-2 bg-white rounded-lg shadow-sm hover:bg-emerald-50 text-sm font-bold text-emerald-600">المحفوظ</button>
+                <button onclick="filterSurahs('pending')" class="px-4 py-2 bg-white rounded-lg shadow-sm hover:bg-emerald-50 text-sm font-bold text-orange-600">قيد الحفظ</button>
             </div>
         </div>
 
@@ -92,6 +98,25 @@
             <!-- Cards will be injected by JS -->
         </div>
     </main>
+
+    <!-- AI Info Modal -->
+    <div id="ai-modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-8 max-w-lg w-full max-h-[80vh] overflow-y-auto shadow-2xl relative">
+            <button onclick="closeAIModal()" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600">✕</button>
+            <div class="flex items-center gap-2 mb-4">
+                <div class="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-xl">✨</div>
+                <h2 id="ai-modal-title" class="text-2xl font-bold text-gray-800">تحليل المساعد الذكي</h2>
+            </div>
+            <div id="ai-loading" class="hidden py-10 text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
+                <p class="mt-4 text-gray-500 italic">ذكاء Gemini يحلل البيانات الآن...</p>
+            </div>
+            <div id="ai-content" class="text-gray-700 leading-relaxed space-y-4">
+                <!-- Content injected here -->
+            </div>
+            <button onclick="closeAIModal()" class="mt-8 w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition">إغلاق</button>
+        </div>
+    </div>
 
     <!-- Success Modal -->
     <div id="success-modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50 p-4">
@@ -104,6 +129,8 @@
     </div>
 
     <script>
+        const apiKey = ""; // API key is handled by the environment
+
         const surahs = [
             { id: 78, name: "النبأ", verses: 40 }, { id: 79, name: "النازعات", verses: 46 },
             { id: 80, name: "عبس", verses: 42 }, { id: 81, name: "التكوير", verses: 29 },
@@ -129,21 +156,67 @@
         let progress = JSON.parse(localStorage.getItem('quran_progress')) || {};
         let studentData = JSON.parse(localStorage.getItem('student_info')) || { name: '', level: '' };
 
+        async function geminiAI(prompt) {
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            
+            let retries = 0;
+            const maxRetries = 5;
+            
+            while (retries < maxRetries) {
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: prompt }] }],
+                            systemInstruction: { parts: [{ text: "أنت معلم قرآن خبير ومساعد تربوي. إجاباتك يجب أن تكون ملهمة، دقيقة، وباللغة العربية الفصحى البسيطة. ركز على تقديم نصائح حفظ عملية ومعاني كلمات مؤثرة." }] }
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    return result.candidates?.[0]?.content?.parts?.[0]?.text || "عذراً، لم أتمكن من الحصول على إجابة الآن.";
+                } catch (error) {
+                    retries++;
+                    await new Promise(res => setTimeout(res, Math.pow(2, retries) * 1000));
+                }
+            }
+            return "حدث خطأ في الاتصال بالذكاء الاصطناعي. يرجى المحاولة لاحقاً.";
+        }
+
+        async function getSurahAITips(surahName) {
+            showAIModal(`مساعد حفظ سورة ${surahName} ✨`);
+            const prompt = `قدم لي 3 نصائح ذهبية ومختصرة تساعد الطالب على حفظ سورة ${surahName} من جزء عم، مع ذكر رابط ذهني واحد يسهل تذكر آياتها.`;
+            const content = await geminiAI(prompt);
+            displayAIContent(content);
+        }
+
+        async function generateRevisionPlan() {
+            showAIModal("خطة المراجعة المخصصة ✨");
+            const savedSurahs = surahs.filter(s => progress[s.id]?.saved).map(s => `${s.name} (إتقان ${progress[s.id].mastery}%)`).join(', ');
+            
+            if (savedSurahs.length === 0) {
+                displayAIContent("لم تبدأ الحفظ بعد! ابدأ بحفظ السور القصيرة مثل الإخلاص والناس وسأقوم بتوليد خطة مراجعة لك فوراً.");
+                return;
+            }
+
+            const prompt = `بناءً على قائمة السور المحفوظة ومستوى إتقانها: ${savedSurahs}. وباعتبار الطالب في مرحلة ${studentData.level || 'الدراسة'} واسمه ${studentData.name || 'طالب العلم'}. اقترح خطة مراجعة أسبوعية مركزة للسور التي يقل إتقانها عن 90%، مع جملة تشجيعية في النهاية.`;
+            const content = await geminiAI(prompt);
+            displayAIContent(content);
+        }
+
         function init() {
-            // Load student info
             document.getElementById('studentName').value = studentData.name;
             document.getElementById('studentLevel').value = studentData.level;
-            
             renderSurahs(surahs);
             updateGlobalProgress();
         }
 
         function saveStudentData() {
-            const data = {
+            studentData = {
                 name: document.getElementById('studentName').value,
                 level: document.getElementById('studentLevel').value
             };
-            localStorage.setItem('student_info', JSON.stringify(data));
+            localStorage.setItem('student_info', JSON.stringify(studentData));
         }
 
         function renderSurahs(data) {
@@ -162,17 +235,20 @@
                             <h3 class="text-2xl font-bold quran-font">${surah.name}</h3>
                             <p class="text-xs text-gray-400">${surah.verses} آية</p>
                         </div>
-                        <div class="flex items-center gap-2">
-                             <input type="checkbox" id="check-${surah.id}" ${state.saved ? 'checked' : ''} 
-                                    onchange="toggleSaved(${surah.id})" 
-                                    class="hidden custom-checkbox">
-                             <label for="check-${surah.id}" class="cursor-pointer px-4 py-2 rounded-xl bg-gray-100 text-gray-500 text-xs font-bold transition-all hover:bg-gray-200">
-                                ${state.saved ? 'تم الحفظ ✓' : 'لم تُحفظ'}
-                             </label>
+                        <div class="flex flex-col gap-2">
+                             <div class="flex items-center gap-2">
+                                <input type="checkbox" id="check-${surah.id}" ${state.saved ? 'checked' : ''} 
+                                        onchange="toggleSaved(${surah.id})" 
+                                        class="hidden custom-checkbox">
+                                <label for="check-${surah.id}" class="cursor-pointer px-3 py-1.5 rounded-lg bg-gray-100 text-gray-500 text-[10px] font-bold transition-all hover:bg-gray-200">
+                                    ${state.saved ? 'تم الحفظ ✓' : 'لم تُحفظ'}
+                                </label>
+                             </div>
+                             <button onclick="getSurahAITips('${surah.name}')" class="text-[10px] text-emerald-600 font-bold hover:underline">نصائح الحفظ ✨</button>
                         </div>
                     </div>
 
-                    <div class="mt-6">
+                    <div class="mt-4">
                         <div class="flex justify-between text-xs mb-2 text-gray-500 font-bold">
                             <span>نسبة الإتقان</span>
                             <span>${state.mastery}%</span>
@@ -203,11 +279,9 @@
             if (!progress[id]) progress[id] = { saved: false, mastery: 0 };
             progress[id].saved = !progress[id].saved;
             if (progress[id].saved && progress[id].mastery === 0) progress[id].mastery = 100;
-            
             saveAndRefresh();
-
             if (progress[id].saved) {
-                const name = document.getElementById('studentName').value || 'يا بطل';
+                const name = studentData.name || 'يا بطل';
                 showModal(`بارك الله فيك يا ${name}، تم حفظ سورة ${surahs.find(s => s.id === id).name}!`);
             }
         }
@@ -229,26 +303,39 @@
             const totalSurahs = surahs.length;
             const savedSurahs = Object.values(progress).filter(p => p.saved).length;
             const percent = totalSurahs > 0 ? Math.round((savedSurahs / totalSurahs) * 100) : 0;
-            
             document.getElementById('total-percent').innerText = percent + '%';
             document.getElementById('total-progress-bar').style.width = percent + '%';
             document.getElementById('stats-text').innerText = `تم حفظ ${savedSurahs} سورة من أصل ${totalSurahs}`;
         }
 
-        document.getElementById('searchSurah').addEventListener('input', (e) => {
-            filterSurahs('all', e.target.value);
-        });
-
         function filterSurahs(type, query = '') {
             const filtered = surahs.filter(s => {
                 const matchesSearch = s.name.includes(query);
                 const state = progress[s.id] || { saved: false };
-                
                 if (type === 'completed') return matchesSearch && state.saved;
                 if (type === 'pending') return matchesSearch && !state.saved;
                 return matchesSearch;
             });
             renderSurahs(filtered);
+        }
+
+        // Modal Controls
+        function showAIModal(title) {
+            document.getElementById('ai-modal-title').innerText = title;
+            document.getElementById('ai-content').innerHTML = '';
+            document.getElementById('ai-loading').classList.remove('hidden');
+            document.getElementById('ai-modal').classList.remove('hidden');
+        }
+
+        function displayAIContent(text) {
+            document.getElementById('ai-loading').classList.add('hidden');
+            // Basic markdown-like formatting for AI response
+            const formatted = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            document.getElementById('ai-content').innerHTML = formatted;
+        }
+
+        function closeAIModal() {
+            document.getElementById('ai-modal').classList.add('hidden');
         }
 
         function showModal(msg) {
