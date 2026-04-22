@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>متابعة حفظ جزء عم - المساعد الذكي</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@300;500;800&display=swap" rel="stylesheet">
     <style>
         body {
@@ -27,109 +28,118 @@
             background-color: #48bb78;
             color: white;
         }
-        input::placeholder {
-            color: rgba(255, 255, 255, 0.6);
+        .badge-pulse {
+            animation: pulse 2s infinite;
         }
-        .gemini-gradient {
-            background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        @media print {
+            .no-print { display: none !important; }
         }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen pb-12">
 
-    <!-- Header -->
-    <header class="bg-emerald-700 text-white py-10 px-4 shadow-lg mb-8 relative overflow-hidden">
-        <div class="max-w-6xl mx-auto relative z-10">
-            <div class="flex flex-col lg:flex-row justify-between items-center gap-8">
-                
-                <!-- Student Info -->
-                <div class="flex flex-col md:flex-row gap-4 w-full lg:w-auto">
-                    <div class="bg-white/10 p-4 rounded-2xl backdrop-blur-md flex-1">
-                        <label class="block text-xs text-emerald-200 mb-1">اسم الطالب</label>
-                        <input type="text" id="studentName" oninput="saveStudentData()" placeholder="اكتب اسمك هنا..." 
-                               class="bg-transparent border-b border-emerald-400 focus:border-yellow-400 outline-none w-full text-xl font-bold placeholder:text-emerald-300">
+    <div id="capture-area">
+        <!-- Header -->
+        <header class="bg-emerald-700 text-white py-8 px-4 shadow-lg mb-8 relative overflow-hidden">
+            <div class="max-w-6xl mx-auto relative z-10">
+                <div class="flex flex-col lg:flex-row justify-between items-center gap-6">
+                    
+                    <!-- Student Info -->
+                    <div class="flex flex-col md:flex-row gap-4 w-full lg:w-auto no-print">
+                        <div class="bg-white/10 p-4 rounded-2xl backdrop-blur-md flex-1">
+                            <label class="block text-xs text-emerald-200 mb-1">اسم الطالب</label>
+                            <input type="text" id="studentName" oninput="saveAllData()" placeholder="اكتب اسمك هنا..." 
+                                   class="bg-transparent border-b border-emerald-400 focus:border-yellow-400 outline-none w-full text-xl font-bold placeholder:text-emerald-300">
+                        </div>
+                        <div class="bg-white/10 p-4 rounded-2xl backdrop-blur-md min-w-[150px]">
+                            <label class="block text-xs text-emerald-200 mb-1">المرحلة الدراسية</label>
+                            <input type="text" id="studentLevel" oninput="saveAllData()" placeholder="مثلاً: الصف الخامس" 
+                                   class="bg-transparent border-b border-emerald-400 focus:border-yellow-400 outline-none w-full text-lg placeholder:text-emerald-300">
+                        </div>
                     </div>
-                    <div class="bg-white/10 p-4 rounded-2xl backdrop-blur-md min-w-[150px]">
-                        <label class="block text-xs text-emerald-200 mb-1">المرحلة الدراسية</label>
-                        <input type="text" id="studentLevel" oninput="saveStudentData()" placeholder="مثلاً: الصف الخامس" 
-                               class="bg-transparent border-b border-emerald-400 focus:border-yellow-400 outline-none w-full text-lg placeholder:text-emerald-300">
+
+                    <!-- Title & Global Progress -->
+                    <div class="text-center">
+                        <h1 class="text-3xl md:text-4xl font-extrabold mb-4 quran-font">مُتابعة حفظ جُزء عمّ</h1>
+                        <div class="bg-white/10 p-4 rounded-2xl backdrop-blur-sm inline-block min-w-[280px]">
+                            <div class="flex justify-between mb-2 items-center">
+                                <span class="text-sm font-bold">الإنجاز الكلي</span>
+                                <span id="total-percent" class="text-xl font-black">0%</span>
+                            </div>
+                            <div class="w-full bg-white/20 rounded-full h-3">
+                                <div id="total-progress-bar" class="bg-yellow-400 h-3 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                            </div>
+                            <div class="flex gap-2 mt-4 no-print">
+                                <button onclick="exportToPDF()" class="flex-1 px-3 py-2 bg-emerald-600 border border-emerald-400 text-white rounded-full text-xs font-bold hover:bg-emerald-500 transition flex items-center justify-center gap-1">
+                                   <span>تحميل PDF 📄</span>
+                                </button>
+                                <button onclick="clearProgress()" class="px-3 py-2 bg-red-600/20 text-red-100 rounded-full text-[10px] font-bold hover:bg-red-600/40 transition">
+                                   تصفير 🗑️
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </div>
+        </header>
 
-                <!-- Title & Global Progress -->
-                <div class="text-center">
-                    <h1 class="text-4xl md:text-5xl font-extrabold mb-4 quran-font">مُتابعة حفظ جُزء عمّ</h1>
-                    <div class="bg-white/10 p-5 rounded-2xl backdrop-blur-sm inline-block min-w-[300px]">
-                        <div class="flex justify-between mb-2 items-center">
-                            <span class="text-sm font-bold">الإنجاز الكلي للجزء</span>
-                            <span id="total-percent" class="text-2xl font-black">0%</span>
-                        </div>
-                        <div class="w-full bg-white/20 rounded-full h-4">
-                            <div id="total-progress-bar" class="bg-yellow-400 h-4 rounded-full transition-all duration-1000" style="width: 0%"></div>
-                        </div>
-                        <button onclick="generateRevisionPlan()" class="mt-4 px-4 py-2 bg-white text-emerald-700 rounded-full text-sm font-bold hover:bg-yellow-400 transition flex items-center justify-center gap-2 w-full">
-                           <span>خطة مراجعة ذكية ✨</span>
-                        </button>
-                    </div>
+        <main class="max-w-6xl mx-auto px-4">
+            <!-- Search & Filters -->
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 no-print">
+                <div class="relative w-full md:w-96">
+                    <input type="text" id="searchSurah" placeholder="ابحث عن سورة..." class="w-full p-3 pr-10 rounded-xl border-none shadow-sm focus:ring-2 focus:ring-emerald-500">
+                    <span class="absolute right-3 top-3 text-gray-400">🔍</span>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="filterSurahs('all')" class="px-4 py-2 bg-white rounded-lg shadow-sm hover:bg-emerald-50 text-sm font-bold">الكل</button>
+                    <button onclick="filterSurahs('completed')" class="px-4 py-2 bg-white rounded-lg shadow-sm hover:bg-emerald-50 text-sm font-bold text-emerald-600">المحفوظ</button>
                 </div>
             </div>
-        </div>
-        <div class="absolute -top-24 -right-24 w-64 h-64 bg-emerald-600 rounded-full opacity-50"></div>
-    </header>
 
-    <main class="max-w-6xl mx-auto px-4">
-        <!-- Search & Filters -->
-        <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-            <div class="relative w-full md:w-96">
-                <input type="text" id="searchSurah" placeholder="ابحث عن سورة..." class="w-full p-3 pr-10 rounded-xl border-none shadow-sm focus:ring-2 focus:ring-emerald-500">
-                <span class="absolute right-3 top-3 text-gray-400">🔍</span>
+            <!-- Surahs Grid -->
+            <div id="surah-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Cards injected here -->
             </div>
-            <div class="flex gap-2">
-                <button onclick="filterSurahs('all')" class="px-4 py-2 bg-white rounded-lg shadow-sm hover:bg-emerald-50 text-sm font-bold">الكل</button>
-                <button onclick="filterSurahs('completed')" class="px-4 py-2 bg-white rounded-lg shadow-sm hover:bg-emerald-50 text-sm font-bold text-emerald-600">المحفوظ</button>
-                <button onclick="filterSurahs('pending')" class="px-4 py-2 bg-white rounded-lg shadow-sm hover:bg-emerald-50 text-sm font-bold text-orange-600">قيد الحفظ</button>
-            </div>
-        </div>
+        </main>
+    </div>
 
-        <!-- Surahs Grid -->
-        <div id="surah-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Cards will be injected by JS -->
-        </div>
-    </main>
+    <!-- Badge Selector Modal (Per Surah) -->
+    <div id="badge-modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl">
+            <h2 id="badge-modal-title" class="text-xl font-bold text-emerald-800 mb-4">تحفيز للسورة</h2>
+            <p class="text-sm text-gray-500 mb-6">اختر وساماً تشجيعياً لهذه السورة:</p>
+            
+            <div class="grid grid-cols-4 gap-4 mb-8">
+                <button onclick="assignBadgeToSurah('⭐')" class="p-4 bg-gray-50 hover:bg-yellow-100 rounded-2xl text-3xl transition">⭐</button>
+                <button onclick="assignBadgeToSurah('🏆')" class="p-4 bg-gray-50 hover:bg-yellow-100 rounded-2xl text-3xl transition">🏆</button>
+                <button onclick="assignBadgeToSurah('💎')" class="p-4 bg-gray-50 hover:bg-yellow-100 rounded-2xl text-3xl transition">💎</button>
+                <button onclick="assignBadgeToSurah('🏅')" class="p-4 bg-gray-50 hover:bg-yellow-100 rounded-2xl text-3xl transition">🏅</button>
+                <button onclick="assignBadgeToSurah('✨')" class="p-4 bg-gray-50 hover:bg-yellow-100 rounded-2xl text-3xl transition">✨</button>
+                <button onclick="assignBadgeToSurah('💪')" class="p-4 bg-gray-50 hover:bg-yellow-100 rounded-2xl text-3xl transition">💪</button>
+                <button onclick="assignBadgeToSurah('🎯')" class="p-4 bg-gray-50 hover:bg-yellow-100 rounded-2xl text-3xl transition">🎯</button>
+                <button onclick="assignBadgeToSurah(null)" class="p-4 bg-red-50 hover:bg-red-100 rounded-2xl text-xl transition text-red-500">🚫</button>
+            </div>
 
-    <!-- AI Info Modal -->
-    <div id="ai-modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-3xl p-8 max-w-lg w-full max-h-[80vh] overflow-y-auto shadow-2xl relative">
-            <button onclick="closeAIModal()" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600">✕</button>
-            <div class="flex items-center gap-2 mb-4">
-                <div class="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-xl">✨</div>
-                <h2 id="ai-modal-title" class="text-2xl font-bold text-gray-800">تحليل المساعد الذكي</h2>
-            </div>
-            <div id="ai-loading" class="hidden py-10 text-center">
-                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
-                <p class="mt-4 text-gray-500 italic">ذكاء Gemini يحلل البيانات الآن...</p>
-            </div>
-            <div id="ai-content" class="text-gray-700 leading-relaxed space-y-4">
-                <!-- Content injected here -->
-            </div>
-            <button onclick="closeAIModal()" class="mt-8 w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition">إغلاق</button>
+            <button onclick="closeBadgeModal()" class="w-full py-3 bg-gray-100 text-gray-600 rounded-xl font-bold hover:bg-gray-200 transition">إلغاء</button>
         </div>
     </div>
 
-    <!-- Success Modal -->
-    <div id="success-modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
-            <div class="text-6xl mb-4">🎊</div>
-            <h2 class="text-2xl font-bold mb-2 text-emerald-700">مبارك الحفظ!</h2>
-            <p class="text-gray-600 mb-6" id="modal-msg"></p>
-            <button onclick="closeModal()" class="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition">استمرار</button>
+    <!-- AI & Success Modals (Same as before) -->
+    <div id="ai-modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50 p-4 backdrop-blur-sm no-print">
+        <div class="bg-white rounded-3xl p-8 max-w-lg w-full max-h-[80vh] overflow-y-auto shadow-2xl relative">
+            <button onclick="closeAIModal()" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600">✕</button>
+            <div id="ai-loading" class="hidden py-10 text-center"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div></div>
+            <div id="ai-content" class="text-gray-700 leading-relaxed space-y-4"></div>
         </div>
     </div>
 
     <script>
-        const apiKey = ""; // API key is handled by the environment
+        const apiKey = ""; 
 
         const surahs = [
             { id: 78, name: "النبأ", verses: 40 }, { id: 79, name: "النازعات", verses: 46 },
@@ -155,68 +165,22 @@
 
         let progress = JSON.parse(localStorage.getItem('quran_progress')) || {};
         let studentData = JSON.parse(localStorage.getItem('student_info')) || { name: '', level: '' };
-
-        async function geminiAI(prompt) {
-            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            
-            let retries = 0;
-            const maxRetries = 5;
-            
-            while (retries < maxRetries) {
-                try {
-                    const response = await fetch(endpoint, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: prompt }] }],
-                            systemInstruction: { parts: [{ text: "أنت معلم قرآن خبير ومساعد تربوي. إجاباتك يجب أن تكون ملهمة، دقيقة، وباللغة العربية الفصحى البسيطة. ركز على تقديم نصائح حفظ عملية ومعاني كلمات مؤثرة." }] }
-                        })
-                    });
-                    
-                    const result = await response.json();
-                    return result.candidates?.[0]?.content?.parts?.[0]?.text || "عذراً، لم أتمكن من الحصول على إجابة الآن.";
-                } catch (error) {
-                    retries++;
-                    await new Promise(res => setTimeout(res, Math.pow(2, retries) * 1000));
-                }
-            }
-            return "حدث خطأ في الاتصال بالذكاء الاصطناعي. يرجى المحاولة لاحقاً.";
-        }
-
-        async function getSurahAITips(surahName) {
-            showAIModal(`مساعد حفظ سورة ${surahName} ✨`);
-            const prompt = `قدم لي 3 نصائح ذهبية ومختصرة تساعد الطالب على حفظ سورة ${surahName} من جزء عم، مع ذكر رابط ذهني واحد يسهل تذكر آياتها.`;
-            const content = await geminiAI(prompt);
-            displayAIContent(content);
-        }
-
-        async function generateRevisionPlan() {
-            showAIModal("خطة المراجعة المخصصة ✨");
-            const savedSurahs = surahs.filter(s => progress[s.id]?.saved).map(s => `${s.name} (إتقان ${progress[s.id].mastery}%)`).join(', ');
-            
-            if (savedSurahs.length === 0) {
-                displayAIContent("لم تبدأ الحفظ بعد! ابدأ بحفظ السور القصيرة مثل الإخلاص والناس وسأقوم بتوليد خطة مراجعة لك فوراً.");
-                return;
-            }
-
-            const prompt = `بناءً على قائمة السور المحفوظة ومستوى إتقانها: ${savedSurahs}. وباعتبار الطالب في مرحلة ${studentData.level || 'الدراسة'} واسمه ${studentData.name || 'طالب العلم'}. اقترح خطة مراجعة أسبوعية مركزة للسور التي يقل إتقانها عن 90%، مع جملة تشجيعية في النهاية.`;
-            const content = await geminiAI(prompt);
-            displayAIContent(content);
-        }
+        let currentTargetSurah = null;
 
         function init() {
-            document.getElementById('studentName').value = studentData.name;
-            document.getElementById('studentLevel').value = studentData.level;
+            document.getElementById('studentName').value = studentData.name || "";
+            document.getElementById('studentLevel').value = studentData.level || "";
             renderSurahs(surahs);
             updateGlobalProgress();
         }
 
-        function saveStudentData() {
+        function saveAllData() {
             studentData = {
                 name: document.getElementById('studentName').value,
                 level: document.getElementById('studentLevel').value
             };
             localStorage.setItem('student_info', JSON.stringify(studentData));
+            localStorage.setItem('quran_progress', JSON.stringify(progress));
         }
 
         function renderSurahs(data) {
@@ -224,128 +188,130 @@
             container.innerHTML = '';
             
             data.forEach(surah => {
-                const state = progress[surah.id] || { saved: false, mastery: 0 };
+                const state = progress[surah.id] || { saved: false, mastery: 0, badge: null };
                 const card = document.createElement('div');
-                card.className = `surah-card bg-white p-6 rounded-2xl shadow-sm relative ${state.saved ? 'border-emerald-200' : ''}`;
+                card.className = `surah-card bg-white p-5 rounded-2xl shadow-sm relative ${state.saved ? 'border-emerald-200 ring-1 ring-emerald-100' : 'opacity-80'}`;
                 
                 card.innerHTML = `
                     <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md mb-1 inline-block">سورة رقم ${surah.id}</span>
-                            <h3 class="text-2xl font-bold quran-font">${surah.name}</h3>
-                            <p class="text-xs text-gray-400">${surah.verses} آية</p>
-                        </div>
-                        <div class="flex flex-col gap-2">
-                             <div class="flex items-center gap-2">
-                                <input type="checkbox" id="check-${surah.id}" ${state.saved ? 'checked' : ''} 
-                                        onchange="toggleSaved(${surah.id})" 
-                                        class="hidden custom-checkbox">
-                                <label for="check-${surah.id}" class="cursor-pointer px-3 py-1.5 rounded-lg bg-gray-100 text-gray-500 text-[10px] font-bold transition-all hover:bg-gray-200">
-                                    ${state.saved ? 'تم الحفظ ✓' : 'لم تُحفظ'}
-                                </label>
+                        <div class="flex gap-3">
+                             <div class="text-3xl ${state.badge ? 'badge-pulse' : 'opacity-0'} transition-opacity" id="surah-badge-${surah.id}">
+                                ${state.badge || '⭐'}
                              </div>
-                             <button onclick="getSurahAITips('${surah.name}')" class="text-[10px] text-emerald-600 font-bold hover:underline">نصائح الحفظ ✨</button>
+                             <div>
+                                <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded mb-1 inline-block no-print">سورة ${surah.id}</span>
+                                <h3 class="text-xl font-bold quran-font">${surah.name}</h3>
+                             </div>
+                        </div>
+                        <div class="flex flex-col gap-2 items-end no-print">
+                             <input type="checkbox" id="check-${surah.id}" ${state.saved ? 'checked' : ''} onchange="toggleSaved(${surah.id})" class="hidden custom-checkbox">
+                             <label for="check-${surah.id}" class="cursor-pointer px-3 py-1.5 rounded-lg bg-gray-100 text-gray-500 text-[10px] font-bold transition-all hover:bg-gray-200">
+                                ${state.saved ? 'محفوظ ✓' : 'لم يحفظ'}
+                             </label>
+                             <button onclick="openBadgeModal(${surah.id})" class="text-[10px] text-yellow-600 font-bold flex items-center gap-1 hover:underline">
+                                <span>تحفيز</span> 🎁
+                             </button>
                         </div>
                     </div>
-
-                    <div class="mt-4">
-                        <div class="flex justify-between text-xs mb-2 text-gray-500 font-bold">
-                            <span>نسبة الإتقان</span>
-                            <span>${state.mastery}%</span>
-                        </div>
-                        <input type="range" min="0" max="100" value="${state.mastery}" 
-                               oninput="updateMastery(${surah.id}, this.value)"
-                               class="w-full h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                    <div>
+                        <div class="flex justify-between text-[10px] mb-1 text-gray-400"><span>الإتقان</span><span>${state.mastery}%</span></div>
+                        <input type="range" min="0" max="100" value="${state.mastery}" oninput="updateMastery(${surah.id}, this.value)" class="w-full h-1 bg-gray-100 rounded-lg appearance-none accent-emerald-500 no-print">
                     </div>
-
-                    <div class="mt-4 flex gap-1 justify-center">
-                        ${renderStars(state.mastery)}
+                    <div class="mt-3 flex gap-0.5 justify-center">${renderStars(state.mastery)}</div>
+                    <div class="mt-2 text-center no-print">
+                        <button onclick="getSurahAITips('${surah.name}')" class="text-[9px] text-emerald-400 hover:text-emerald-600 transition">نصيحة ذكية ✨</button>
                     </div>
                 `;
                 container.appendChild(card);
             });
         }
 
-        function renderStars(percent) {
-            let stars = '';
-            const count = Math.ceil(percent / 20);
-            for(let i=1; i<=5; i++) {
-                stars += `<span class="${i <= count ? 'text-yellow-400' : 'text-gray-200'} text-xl">★</span>`;
+        // Badge Per Surah Logic
+        function openBadgeModal(surahId) {
+            currentTargetSurah = surahId;
+            const surah = surahs.find(s => s.id === surahId);
+            document.getElementById('badge-modal-title').innerText = `تحفيز سورة ${surah.name}`;
+            document.getElementById('badge-modal').classList.remove('hidden');
+        }
+
+        function closeBadgeModal() {
+            document.getElementById('badge-modal').classList.add('hidden');
+            currentTargetSurah = null;
+        }
+
+        function assignBadgeToSurah(icon) {
+            if (currentTargetSurah) {
+                if (!progress[currentTargetSurah]) progress[currentTargetSurah] = { saved: false, mastery: 0 };
+                progress[currentTargetSurah].badge = icon;
+                saveAllData();
+                renderSurahs(surahs); // Refresh grid
+                closeBadgeModal();
             }
-            return stars;
+        }
+
+        function renderStars(percent) {
+            let s = ''; const count = Math.ceil(percent / 20);
+            for(let i=1; i<=5; i++) s += `<span class="${i <= count ? 'text-yellow-400' : 'text-gray-200'} text-xs">★</span>`;
+            return s;
         }
 
         function toggleSaved(id) {
-            if (!progress[id]) progress[id] = { saved: false, mastery: 0 };
+            if (!progress[id]) progress[id] = { saved: false, mastery: 0, badge: null };
             progress[id].saved = !progress[id].saved;
             if (progress[id].saved && progress[id].mastery === 0) progress[id].mastery = 100;
-            saveAndRefresh();
-            if (progress[id].saved) {
-                const name = studentData.name || 'يا بطل';
-                showModal(`بارك الله فيك يا ${name}، تم حفظ سورة ${surahs.find(s => s.id === id).name}!`);
-            }
+            saveAllData();
+            updateGlobalProgress();
+            renderSurahs(surahs);
         }
 
         function updateMastery(id, val) {
-            if (!progress[id]) progress[id] = { saved: false, mastery: 0 };
+            if (!progress[id]) progress[id] = { saved: false, mastery: 0, badge: null };
             progress[id].mastery = parseInt(val);
-            saveAndRefresh();
-        }
-
-        function saveAndRefresh() {
-            localStorage.setItem('quran_progress', JSON.stringify(progress));
-            updateGlobalProgress();
-            const searchVal = document.getElementById('searchSurah').value;
-            filterSurahs('all', searchVal);
+            saveAllData();
         }
 
         function updateGlobalProgress() {
-            const totalSurahs = surahs.length;
-            const savedSurahs = Object.values(progress).filter(p => p.saved).length;
-            const percent = totalSurahs > 0 ? Math.round((savedSurahs / totalSurahs) * 100) : 0;
+            const saved = Object.values(progress).filter(p => p.saved).length;
+            const percent = Math.round((saved / surahs.length) * 100);
             document.getElementById('total-percent').innerText = percent + '%';
             document.getElementById('total-progress-bar').style.width = percent + '%';
-            document.getElementById('stats-text').innerText = `تم حفظ ${savedSurahs} سورة من أصل ${totalSurahs}`;
         }
 
-        function filterSurahs(type, query = '') {
-            const filtered = surahs.filter(s => {
-                const matchesSearch = s.name.includes(query);
-                const state = progress[s.id] || { saved: false };
-                if (type === 'completed') return matchesSearch && state.saved;
-                if (type === 'pending') return matchesSearch && !state.saved;
-                return matchesSearch;
-            });
-            renderSurahs(filtered);
+        function exportToPDF() {
+            const element = document.getElementById('capture-area');
+            html2pdf().from(element).save(`تقرير_حفظ_${studentData.name || 'طالب'}.pdf`);
         }
 
-        // Modal Controls
-        function showAIModal(title) {
-            document.getElementById('ai-modal-title').innerText = title;
+        function clearProgress() {
+            if (confirm("هل تريد مسح كل البيانات والبدء من جديد؟")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        async function geminiAI(prompt) {
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                const result = await response.json();
+                return result.candidates?.[0]?.content?.parts?.[0]?.text || "نصيحة: داوم على المراجعة.";
+            } catch (e) { return "حاول لاحقاً."; }
+        }
+
+        async function getSurahAITips(surahName) {
             document.getElementById('ai-content').innerHTML = '';
             document.getElementById('ai-loading').classList.remove('hidden');
             document.getElementById('ai-modal').classList.remove('hidden');
-        }
-
-        function displayAIContent(text) {
+            const content = await geminiAI(`قدم نصيحة تربوية قصيرة جداً لحفظ سورة ${surahName}`);
             document.getElementById('ai-loading').classList.add('hidden');
-            // Basic markdown-like formatting for AI response
-            const formatted = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            document.getElementById('ai-content').innerHTML = formatted;
+            document.getElementById('ai-content').innerText = content;
         }
 
-        function closeAIModal() {
-            document.getElementById('ai-modal').classList.add('hidden');
-        }
-
-        function showModal(msg) {
-            document.getElementById('modal-msg').innerText = msg;
-            document.getElementById('success-modal').classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('success-modal').classList.add('hidden');
-        }
+        function closeAIModal() { document.getElementById('ai-modal').classList.add('hidden'); }
 
         window.onload = init;
     </script>
