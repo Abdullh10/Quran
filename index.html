@@ -129,38 +129,78 @@
         </div>
     </div>
 
-    <!-- AI & Success Modals -->
+    <!-- AI & Information Modal (Expanded) -->
     <div id="ai-modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50 p-4 backdrop-blur-sm no-print">
-        <div class="bg-white rounded-3xl p-8 max-w-lg w-full max-h-[80vh] overflow-y-auto shadow-2xl relative">
-            <button onclick="closeAIModal()" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600">✕</button>
-            <div id="ai-loading" class="hidden py-10 text-center"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div></div>
-            <div id="ai-content" class="text-gray-700 leading-relaxed space-y-4 whitespace-pre-wrap"></div>
+        <div class="bg-white rounded-3xl p-8 max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl relative">
+            <button onclick="closeAIModal()" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600 text-2xl font-bold">✕</button>
+            
+            <div id="ai-loading" class="hidden py-10 text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
+                <p class="mt-4 text-emerald-600 font-bold">جاري استحضار المعلومات من المساعد الذكي...</p>
+            </div>
+
+            <div id="ai-content-container" class="hidden">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="bg-emerald-100 p-3 rounded-2xl text-3xl" id="ai-modal-icon">📖</div>
+                    <div>
+                        <h2 id="ai-modal-surah-name" class="text-2xl font-bold text-emerald-800 quran-font">اسم السورة</h2>
+                        <span id="ai-modal-type" class="text-xs bg-emerald-50 text-emerald-600 px-2 py-1 rounded-full font-bold">مكية</span>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Tafsir Section -->
+                    <div class="bg-slate-50 p-5 rounded-2xl border-r-4 border-emerald-500">
+                        <h4 class="text-emerald-700 font-bold mb-2 flex items-center gap-2">
+                             <span>تفسير ميسر</span> 💡
+                        </h4>
+                        <p id="ai-content-tafsir" class="text-gray-700 leading-relaxed text-sm"></p>
+                    </div>
+
+                    <!-- Asbab Nuzul Section -->
+                    <div class="bg-amber-50 p-5 rounded-2xl border-r-4 border-amber-500">
+                        <h4 class="text-amber-700 font-bold mb-2 flex items-center gap-2">
+                            <span>سبب النزول</span> 📜
+                        </h4>
+                        <p id="ai-content-reason" class="text-gray-700 leading-relaxed text-sm"></p>
+                    </div>
+
+                    <!-- AI Memory Tips -->
+                    <div class="bg-sky-50 p-5 rounded-2xl border-r-4 border-sky-500">
+                        <h4 class="text-sky-700 font-bold mb-2 flex items-center gap-2">
+                            <span>نصيحة ذكية للحفظ</span> ✨
+                        </h4>
+                        <p id="ai-content-tips" class="text-gray-700 leading-relaxed text-sm italic"></p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         const apiKey = ""; 
 
+        // القائمة مرتبة تنازلياً من سورة الناس إلى النبأ
         const surahs = [
-            { id: 78, name: "النبأ", verses: 40 }, { id: 79, name: "النازعات", verses: 46 },
-            { id: 80, name: "عبس", verses: 42 }, { id: 81, name: "التكوير", verses: 29 },
-            { id: 82, name: "الانفطار", verses: 19 }, { id: 83, name: "المطففين", verses: 36 },
-            { id: 84, name: "الانشقاق", verses: 25 }, { id: 85, name: "البروج", verses: 22 },
-            { id: 86, name: "الطارق", verses: 17 }, { id: 87, name: "الأعلى", verses: 19 },
-            { id: 88, name: "الغاشية", verses: 26 }, { id: 89, name: "الفجر", verses: 30 },
-            { id: 90, name: "البلد", verses: 20 }, { id: 91, name: "الشمس", verses: 15 },
-            { id: 92, name: "الليل", verses: 21 }, { id: 93, name: "الضحى", verses: 11 },
-            { id: 94, name: "الشرح", verses: 8 }, { id: 95, name: "التين", verses: 8 },
-            { id: 96, name: "العلق", verses: 19 }, { id: 97, name: "القدر", verses: 5 },
-            { id: 98, name: "البينة", verses: 8 }, { id: 99, name: "الزلزلة", verses: 8 },
-            { id: 100, name: "العاديات", verses: 11 }, { id: 101, name: "القارعة", verses: 11 },
-            { id: 102, name: "التكاثر", verses: 8 }, { id: 103, name: "العصر", verses: 3 },
-            { id: 104, name: "الهمزة", verses: 9 }, { id: 105, name: "الفيل", verses: 5 },
-            { id: 106, name: "قريش", verses: 4 }, { id: 107, name: "الماعون", verses: 7 },
-            { id: 108, name: "الكوثر", verses: 3 }, { id: 109, name: "الكافرون", verses: 6 },
-            { id: 110, name: "النصر", verses: 3 }, { id: 111, name: "المسد", verses: 5 },
-            { id: 112, name: "الإخلاص", verses: 4 }, { id: 113, name: "الفلق", verses: 5 },
-            { id: 114, name: "الناس", verses: 6 }
+            { id: 114, name: "الناس", verses: 6 }, { id: 113, name: "الفلق", verses: 5 },
+            { id: 112, name: "الإخلاص", verses: 4 }, { id: 111, name: "المسد", verses: 5 },
+            { id: 110, name: "النصر", verses: 3 }, { id: 109, name: "الكافرون", verses: 6 },
+            { id: 108, name: "الكوثر", verses: 3 }, { id: 107, name: "الماعون", verses: 7 },
+            { id: 106, name: "قريش", verses: 4 }, { id: 105, name: "الفيل", verses: 5 },
+            { id: 104, name: "الهمزة", verses: 9 }, { id: 103, name: "العصر", verses: 3 },
+            { id: 102, name: "التكاثر", verses: 8 }, { id: 101, name: "القارعة", verses: 11 },
+            { id: 100, name: "العاديات", verses: 11 }, { id: 99, name: "الزلزلة", verses: 8 },
+            { id: 98, name: "البينة", verses: 8 }, { id: 97, name: "القدر", verses: 5 },
+            { id: 96, name: "العلق", verses: 19 }, { id: 95, name: "التين", verses: 8 },
+            { id: 94, name: "الشرح", verses: 8 }, { id: 93, name: "الضحى", verses: 11 },
+            { id: 92, name: "الليل", verses: 21 }, { id: 91, name: "الشمس", verses: 15 },
+            { id: 90, name: "البلد", verses: 20 }, { id: 89, name: "الفجر", verses: 30 },
+            { id: 88, name: "الغاشية", verses: 26 }, { id: 87, name: "الأعلى", verses: 19 },
+            { id: 86, name: "الطارق", verses: 17 }, { id: 85, name: "البروج", verses: 22 },
+            { id: 84, name: "الانشقاق", verses: 25 }, { id: 83, name: "المطففين", verses: 36 },
+            { id: 82, name: "الانفطار", verses: 19 }, { id: 81, name: "التكوير", verses: 29 },
+            { id: 80, name: "عبس", verses: 42 }, { id: 79, name: "النازعات", verses: 46 },
+            { id: 78, name: "النبأ", verses: 40 }
         ];
 
         let progress = JSON.parse(localStorage.getItem('quran_progress')) || {};
@@ -218,7 +258,7 @@
                              </div>
                              <div>
                                 <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded mb-1 inline-block no-print">سورة ${surah.id}</span>
-                                <h3 class="text-xl font-bold quran-font">${surah.name}</h3>
+                                <h3 class="text-xl font-bold quran-font">سورة ${surah.name}</h3>
                              </div>
                         </div>
                         <div class="flex flex-col gap-2 items-end no-print">
@@ -245,7 +285,7 @@
                         ${renderStars(state.mastery)}
                     </div>
                     <div class="mt-2 text-center no-print">
-                        <button onclick="getSurahAITips('${surah.name}')" class="text-[9px] text-emerald-400 hover:text-emerald-600 transition">نصيحة ذكية ✨</button>
+                        <button onclick="getSurahFullInfo('${surah.name}')" class="text-[9px] text-emerald-400 hover:text-emerald-600 transition font-bold">استكشاف وتفسير ✨</button>
                     </div>
                 `;
                 container.appendChild(card);
@@ -254,17 +294,13 @@
 
         // Mastery Updates
         function updateMasteryUI(id, val) {
-            // Live update text and stars while sliding
             document.getElementById(`mastery-text-${id}`).innerText = val + '%';
             document.getElementById(`stars-container-${id}`).innerHTML = renderStars(val);
         }
 
         function updateMasteryFinal(id, val) {
-            // Save to storage only when user finishes sliding
             if (!progress[id]) progress[id] = { saved: false, mastery: 0, badge: null };
             progress[id].mastery = parseInt(val);
-            
-            // If mastery is high, mark as saved automatically if not already
             if (val > 0 && !progress[id].saved) {
                 progress[id].saved = true;
                 const card = document.getElementById(`card-${id}`);
@@ -276,11 +312,9 @@
                 if (label) label.innerText = 'محفوظ ✓';
                 updateGlobalProgress();
             }
-            
             saveAllData();
         }
 
-        // Badge Per Surah Logic
         function openBadgeModal(surahId) {
             currentTargetSurah = surahId;
             const surah = surahs.find(s => s.id === surahId);
@@ -315,14 +349,11 @@
         function toggleSaved(id) {
             if (!progress[id]) progress[id] = { saved: false, mastery: 0, badge: null };
             progress[id].saved = !progress[id].saved;
-            
-            // If saved is checked but mastery is 0, bump it to 100 for convenience
             if (progress[id].saved && progress[id].mastery === 0) {
                 progress[id].mastery = 100;
             } else if (!progress[id].saved) {
                 progress[id].mastery = 0;
             }
-            
             saveAllData();
             updateGlobalProgress();
             renderSurahs();
@@ -338,11 +369,11 @@
         function exportToPDF() {
             const element = document.getElementById('capture-area');
             const opt = {
-                margin: 1,
+                margin: 0.5,
                 filename: `تقرير_حفظ_${studentData.name || 'طالب'}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2 },
-                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
             html2pdf().set(opt).from(element).save();
         }
@@ -354,32 +385,59 @@
             }
         }
 
-        async function geminiAI(prompt) {
+        // --- AI Deep Logic ---
+        async function geminiAIStructured(surahName) {
             const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const prompt = `أجب بتنسيق JSON حصرياً حول سورة ${surahName} من جزء عم. البيانات المطلوبة:
+            {
+                "type": "مكية أو مدنية",
+                "tafsir": "تفسير ميسر جداً ومختصر للأطفال (فقرة واحدة)",
+                "reason": "سبب النزول باختصار (إن وجد، وإلا اذكر فضلها أو موضوعها الأساسي)",
+                "tips": "نصيحة عملية ذكية جداً لتسهيل حفظ هذه السورة تحديداً"
+            }`;
+
             try {
                 const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    body: JSON.stringify({ 
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: { responseMimeType: "application/json" }
+                    })
                 });
                 const result = await response.json();
-                return result.candidates?.[0]?.content?.parts?.[0]?.text || "نصيحة: داوم على المراجعة الدورية لضمان تثبيت الحفظ.";
+                return JSON.parse(result.candidates[0].content.parts[0].text);
             } catch (e) { 
-                return "حدث خطأ في الاتصال، لكن تذكر أن التكرار هو سر الإتقان."; 
+                console.error(e);
+                return {
+                    type: "غير متوفر",
+                    tafsir: "تحدث السورة عن عظمة الله واليوم الآخر. يُنصح بتكرارها مع الاستماع للقارئ.",
+                    reason: "نزلت في مكة المكرمة لبيان الحق للناس.",
+                    tips: "قم بتقسيم السورة إلى مقاطع بحسب المعاني لتسهيل الحفظ."
+                };
             }
         }
 
-        async function getSurahAITips(surahName) {
-            const contentArea = document.getElementById('ai-content');
-            contentArea.innerText = '';
-            document.getElementById('ai-loading').classList.remove('hidden');
-            document.getElementById('ai-modal').classList.remove('hidden');
-            
-            const prompt = `قدم نصيحة تربوية وتحفيزية قصيرة وعملية جداً لطالب يحفظ سورة ${surahName} من جزء عم. اجعل النصيحة ودودة ومشجعة باللغة العربية.`;
-            const content = await geminiAI(prompt);
-            
-            document.getElementById('ai-loading').classList.add('hidden');
-            contentArea.innerText = content;
+        async function getSurahFullInfo(surahName) {
+            const loading = document.getElementById('ai-loading');
+            const content = document.getElementById('ai-content-container');
+            const modal = document.getElementById('ai-modal');
+
+            loading.classList.remove('hidden');
+            content.classList.add('hidden');
+            modal.classList.remove('hidden');
+
+            document.getElementById('ai-modal-surah-name').innerText = `سورة ${surahName}`;
+
+            const data = await geminiAIStructured(surahName);
+
+            document.getElementById('ai-modal-type').innerText = data.type;
+            document.getElementById('ai-content-tafsir').innerText = data.tafsir;
+            document.getElementById('ai-content-reason').innerText = data.reason;
+            document.getElementById('ai-content-tips').innerText = data.tips;
+
+            loading.classList.add('hidden');
+            content.classList.remove('hidden');
         }
 
         function closeAIModal() { document.getElementById('ai-modal').classList.add('hidden'); }
