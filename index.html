@@ -1,423 +1,228 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>متابعة حفظ جزء عم - المساعد الذكي</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@300;500;800&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Tajawal', sans-serif;
-            background: #f0f4f8;
-            color: #2d3748;
-        }
-        .quran-font {
-            font-family: 'Amiri', serif;
-        }
-        .surah-card {
-            transition: all 0.3s ease;
-            border: 1px solid rgba(226, 232, 240, 0.8);
-        }
-        .surah-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-        .custom-checkbox:checked + label {
-            background-color: #48bb78;
-            color: white;
-        }
-        .badge-pulse {
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        @media print {
-            .no-print { display: none !important; }
-        }
-        #sync-toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            display: none;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>أسئلة أولمبياد الكيمياء – الغازات</title>
+<style>
+    body { font-family: "Cairo", sans-serif; background:#f7f7f7; padding:20px; line-height:1.8; }
+    .question-box { background:white; padding:20px; margin-bottom:25px; border-radius:10px; border:1px solid #ddd; }
+    .question-box img { max-width:100%; margin:15px 0; border:1px solid #ccc; border-radius:6px; }
+    .feedback { background:#eef7ff; padding:10px; border-right:4px solid #0077cc; margin-top:10px; border-radius:6px; }
+    h2 { color:#333; }
+    .author { background:#fff3cd; padding:15px; border-right:5px solid #ffcc00; border-radius:8px; margin-bottom:25px; font-size:20px; }
+</style>
 </head>
-<body class="bg-slate-50 min-h-screen pb-12">
 
-    <!-- Sync Toast -->
-    <div id="sync-toast" class="bg-black text-white px-6 py-3 rounded-full text-sm font-bold shadow-2xl items-center gap-2">
-        <span id="toast-msg">جاري الحفظ...</span>
+<body>
+
+<div class="author">
+    <strong>إعداد الأستاذ عبدالله حمدي</strong>
+</div>
+
+<h1>أسئلة أولمبياد الكيمياء – الغازات (مستوى عالٍ)</h1>
+
+<!-- السؤال 1 -->
+<div class="question-box">
+    <h2>السؤال 1 — تحليل بيانات مانومتر</h2>
+    <p>يوضح الشكل التالي قراءة مانومتر مفتوح الطرف. إذا كان الفرق بين مستويي الزئبق 28 cm وكان مستوى الزئبق أعلى في جهة الغاز، والضغط الجوي 0.980 atm، احسب ضغط الغاز.</p>
+
+    <img src="https://raw.githubusercontent.com/yourrepo/manometer-diagram.png" alt="manometer diagram">
+
+    <ul>
+        <li>a) 0.643 atm</li>
+        <li>b) 0.980 atm</li>
+        <li>c) 1.349 atm</li>
+        <li>d) 1.743 atm</li>
+    </ul>
+
+    <div class="feedback">
+        ارتفاع الزئبق أعلى في جهة الغاز يعني أن ضغط الغاز أقل من الضغط الجوي.  
+        28 cmHg = 0.368 atm  
+        Pgas = 0.980 − 0.368 = <strong>0.643 atm</strong>
     </div>
+</div>
 
-    <div id="capture-area">
-        <!-- Header -->
-        <header class="bg-emerald-700 text-white py-8 px-4 shadow-lg mb-8 relative overflow-hidden">
-            <div class="max-w-6xl mx-auto relative z-10">
-                <div class="flex flex-col lg:flex-row justify-between items-center gap-6">
-                    
-                    <!-- Student Info -->
-                    <div class="flex flex-col md:flex-row gap-4 w-full lg:w-auto no-print">
-                        <div class="bg-white/10 p-4 rounded-2xl backdrop-blur-md flex-1">
-                            <label class="block text-xs text-emerald-200 mb-1">اسم الطالب</label>
-                            <input type="text" id="studentName" placeholder="اكتب اسمك هنا..." 
-                                   class="bg-transparent border-b border-emerald-400 focus:border-yellow-400 outline-none w-full text-xl font-bold placeholder:text-emerald-300">
-                        </div>
-                        <div class="bg-white/10 p-4 rounded-2xl backdrop-blur-md min-w-[150px]">
-                            <label class="block text-xs text-emerald-200 mb-1">المرحلة الدراسية</label>
-                            <input type="text" id="studentLevel" placeholder="مثلاً: الصف الخامس" 
-                                   class="bg-transparent border-b border-emerald-400 focus:border-yellow-400 outline-none w-full text-lg placeholder:text-emerald-300">
-                        </div>
-                    </div>
+<!-- السؤال 2 -->
+<div class="question-box">
+    <h2>السؤال 2 — استنتاج من نظرية الحركة الجزيئية</h2>
+    <p>يبين الرسم البياني التالي العلاقة بين الضغط ودرجة الحرارة لغاز حقيقي عند درجات حرارة منخفضة. لوحظ أن الضغط ينخفض بشكل غير خطي. ما التفسير الأدق؟</p>
 
-                    <!-- Title & Global Progress -->
-                    <div class="text-center">
-                        <h1 class="text-3xl md:text-4xl font-extrabold mb-4 quran-font">مُتابعة حفظ جُزء عمّ</h1>
-                        <div class="bg-white/10 p-4 rounded-2xl backdrop-blur-sm inline-block min-w-[280px]">
-                            <div class="flex justify-between mb-2 items-center">
-                                <span class="text-sm font-bold text-white">الإنجاز الكلي</span>
-                                <span id="total-percent" class="text-xl font-black">0%</span>
-                            </div>
-                            <div class="w-full bg-white/20 rounded-full h-3">
-                                <div id="total-progress-bar" class="bg-yellow-400 h-3 rounded-full transition-all duration-1000" style="width: 0%"></div>
-                            </div>
-                            <div class="flex gap-2 mt-4 no-print">
-                                <button id="btnSaveCloud" class="flex-[2] px-4 py-2 bg-emerald-500 border border-emerald-300 text-white rounded-full text-xs font-bold hover:bg-emerald-400 transition flex items-center justify-center gap-2 shadow-sm">
-                                   <span>حفظ التقدم سحابياً</span> ☁️
-                                </button>
-                                <button onclick="window.print()" class="flex-1 px-3 py-2 bg-emerald-600 border border-emerald-400 text-white rounded-full text-xs font-bold hover:bg-emerald-500 transition">
-                                   PDF 📄
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </header>
+    <img src="https://raw.githubusercontent.com/yourrepo/real-gas-curve.png" alt="real gas curve">
 
-        <main class="max-w-6xl mx-auto px-4">
-            
-            <!-- Daily Ward -->
-            <section class="mb-10 no-print">
-                <div class="bg-white rounded-3xl p-6 shadow-sm border border-emerald-100">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                        <div class="flex items-center gap-3">
-                            <span class="text-3xl">📅</span>
-                            <div>
-                                <h2 class="text-2xl font-bold text-emerald-800">وِرد اليوم المتعدد</h2>
-                                <p class="text-xs text-gray-500">حدد قائمة السور والآيات اليومية (<span id="wardCount">0</span> سور)</p>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-emerald-600 text-white px-6 py-3 rounded-2xl flex items-center gap-4 shadow-lg">
-                            <div class="text-center">
-                                <div class="text-2xl font-black" id="streakCount">0</div>
-                                <div class="text-[10px] font-bold uppercase tracking-wider opacity-80">أيام متتالية</div>
-                            </div>
-                            <div class="h-8 w-[1px] bg-white/20"></div>
-                            <span class="text-2xl">🔥</span>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                        <div class="lg:col-span-8 space-y-4">
-                            <div id="ward-list" class="space-y-3"></div>
-                            <div class="flex flex-wrap gap-3 pt-2">
-                                <button id="btnAddWard" class="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-bold border border-emerald-100 hover:bg-emerald-100 transition">
-                                    <span>إضافة سورة</span> ➕
-                                </button>
-                                <button id="btnCompleteWard" class="px-8 py-2 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition shadow-md">
-                                    تم إنجاز الورد كاملاً 🎉
-                                </button>
-                            </div>
-                        </div>
+    <ul>
+        <li>a) الجسيمات توقفت عن الحركة</li>
+        <li>b) قوى التجاذب بين الجسيمات أصبحت مؤثرة</li>
+        <li>c) حجم الجسيمات أصبح معدومًا</li>
+        <li>d) التصادمات أصبحت أكثر مرونة</li>
+    </ul>
 
-                        <div class="lg:col-span-4 bg-slate-50 rounded-2xl p-5 border border-slate-200">
-                            <h4 class="font-bold text-emerald-800 mb-4 border-b pb-2 text-sm">ملخص الإنجاز</h4>
-                            <div class="space-y-4">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-xs text-gray-600">تاريخ الإنجاز:</span>
-                                    <span id="lastAchievementDate" class="text-xs font-bold text-emerald-600">--</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-xs text-gray-600 text-[10px]">السحابة:</span>
-                                    <span id="cloud-status" class="text-[10px] font-bold text-emerald-600 italic">جاري التجهيز...</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Surah Grid -->
-            <div id="surah-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-        </main>
+    <div class="feedback">
+        عند انخفاض درجة الحرارة تقل الطاقة الحركية وتبدأ قوى التجاذب بالظهور، مما يسبب انحرافًا عن السلوك المثالي.  
+        <strong>الإجابة: b</strong>
     </div>
+</div>
 
-    <!-- Badge Modal -->
-    <div id="badge-modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-3xl p-6 max-w-sm w-full">
-            <h2 class="text-xl font-bold text-emerald-800 mb-4">تحفيز للسورة</h2>
-            <div class="grid grid-cols-4 gap-4 mb-8">
-                <button onclick="window.assignBadgeToSurah('⭐')" class="p-4 bg-gray-50 rounded-2xl text-3xl">⭐</button>
-                <button onclick="window.assignBadgeToSurah('🏆')" class="p-4 bg-gray-50 rounded-2xl text-3xl">🏆</button>
-                <button onclick="window.assignBadgeToSurah('💎')" class="p-4 bg-gray-50 rounded-2xl text-3xl">💎</button>
-                <button onclick="window.assignBadgeToSurah('🏅')" class="p-4 bg-gray-50 rounded-2xl text-3xl">🏅</button>
-            </div>
-            <button onclick="window.closeBadgeModal()" class="w-full py-3 bg-gray-100 rounded-xl font-bold">إلغاء</button>
-        </div>
+<!-- السؤال 3 -->
+<div class="question-box">
+    <h2>السؤال 3 — قانون جراهام</h2>
+    <p>يبين الشكل معدل تدفق غاز مجهول مقارنة بثاني أكسيد الكربون. إذا كان الغاز المجهول يتدفق 2.25 مرة أسرع، فما كتلته المولية؟</p>
+
+    <img src="https://raw.githubusercontent.com/yourrepo/graham-law.png" alt="graham law">
+
+    <ul>
+        <li>a) 8 g/mol</li>
+        <li>b) 22 g/mol</li>
+        <li>c) 44 g/mol</li>
+        <li>d) 99 g/mol</li>
+    </ul>
+
+    <div class="feedback">
+        باستخدام قانون جراهام:  
+        2.25 = √(44/Mx)  
+        Mx = 8.69 g/mol ≈ <strong>8 g/mol</strong>
     </div>
+</div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+<!-- السؤال 4 -->
+<div class="question-box">
+    <h2>السؤال 4 — انتشار الغازات</h2>
+    <p>يبين الشكل التالي انتشار غازين في غرفة مغلقة. إذا احتاج الغاز المجهول ثلاثة أضعاف الزمن الذي يحتاجه الهيليوم للوصول للطرف الآخر، فما كتلته المولية؟</p>
 
-        // Config
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'juz-amma-tracker-fixed';
+    <img src="https://raw.githubusercontent.com/yourrepo/diffusion-graph.png" alt="diffusion graph">
 
-        const surahs = [
-            { id: 114, name: "الناس", verses: 6 }, { id: 113, name: "الفلق", verses: 5 },
-            { id: 112, name: "الإخلاص", verses: 4 }, { id: 111, name: "المسد", verses: 5 },
-            { id: 110, name: "النصر", verses: 3 }, { id: 109, name: "الكافرون", verses: 6 },
-            { id: 108, name: "الكوثر", verses: 3 }, { id: 107, name: "الماعون", verses: 7 },
-            { id: 106, name: "قريش", verses: 4 }, { id: 105, name: "الفيل", verses: 5 },
-            { id: 104, name: "الهمزة", verses: 9 }, { id: 103, name: "العصر", verses: 3 },
-            { id: 102, name: "التكاثر", verses: 8 }, { id: 101, name: "القارعة", verses: 11 },
-            { id: 100, name: "العاديات", verses: 11 }, { id: 99, name: "الزلزلة", verses: 8 },
-            { id: 98, name: "البينة", verses: 8 }, { id: 97, name: "القدر", verses: 5 },
-            { id: 96, name: "العلق", verses: 19 }, { id: 95, name: "التين", verses: 8 },
-            { id: 94, name: "الشرح", verses: 8 }, { id: 93, name: "الضحى", verses: 11 },
-            { id: 92, name: "الليل", verses: 21 }, { id: 91, name: "الشمس", verses: 15 },
-            { id: 90, name: "البلد", verses: 20 }, { id: 89, name: "الفجر", verses: 30 },
-            { id: 88, name: "الغاشية", verses: 26 }, { id: 87, name: "الأعلى", verses: 19 },
-            { id: 86, name: "الطارق", verses: 17 }, { id: 85, name: "البروج", verses: 22 },
-            { id: 84, name: "الانشقاق", verses: 25 }, { id: 83, name: "المطففين", verses: 36 },
-            { id: 82, name: "الانفطار", verses: 19 }, { id: 81, name: "التكوير", verses: 29 },
-            { id: 80, name: "عبس", verses: 42 }, { id: 79, name: "النازعات", verses: 46 },
-            { id: 78, name: "النبأ", verses: 40 }
-        ];
+    <ul>
+        <li>a) 4 g/mol</li>
+        <li>b) 12 g/mol</li>
+        <li>c) 36 g/mol</li>
+        <li>d) 144 g/mol</li>
+    </ul>
 
-        let state = {
-            progress: {},
-            studentInfo: { name: '', level: '' },
-            multiWard: [{ id: Date.now(), surahId: 114, vFrom: 1, vTo: 6 }],
-            streak: { streak: 0, lastDate: null }
-        };
+    <div class="feedback">
+        vHe = 3 vX  
+        3 = √(MX/4)  
+        MX = <strong>36 g/mol</strong>
+    </div>
+</div>
 
-        let user = null;
-        let currentSId = null;
+<!-- السؤال 5 -->
+<div class="question-box">
+    <h2>السؤال 5 — سلوك الغاز الحقيقي</h2>
+    <p>يوضح الشكل مقارنة بين أحجام جسيمات الهيليوم والبيوتان تحت ضغط عالٍ. أيهما ينحرف أكثر عن السلوك المثالي؟</p>
 
-        const showToast = (msg) => {
-            const toast = document.getElementById('sync-toast');
-            document.getElementById('toast-msg').innerText = msg;
-            toast.style.display = 'flex';
-            setTimeout(() => { toast.style.display = 'none'; }, 3000);
-        };
+    <img src="https://raw.githubusercontent.com/yourrepo/molecular-size.png" alt="molecular size">
 
-        const renderWardList = () => {
-            const container = document.getElementById('ward-list');
-            if (!container) return;
-            container.innerHTML = '';
-            state.multiWard.forEach(item => {
-                const div = document.createElement('div');
-                div.className = "flex items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-100";
-                div.innerHTML = `
-                    <select class="ward-select flex-1 bg-white border border-slate-200 rounded-xl p-2 text-sm" data-id="${item.id}">
-                        ${surahs.map(s => `<option value="${s.id}" ${s.id == item.surahId ? 'selected' : ''}>سورة ${s.name}</option>`).join('')}
-                    </select>
-                    <div class="flex items-center gap-2">
-                        <input type="number" value="${item.vFrom}" class="vfrom-input w-16 p-2 rounded-xl text-xs border border-slate-200 text-center" data-id="${item.id}">
-                        <span class="text-xs">إلى</span>
-                        <input type="number" value="${item.vTo}" class="vto-input w-16 p-2 rounded-xl text-xs border border-slate-200 text-center" data-id="${item.id}">
-                    </div>
-                    <button class="remove-ward text-red-400 p-2" data-id="${item.id}">✕</button>
-                `;
-                container.appendChild(div);
-            });
-            
-            document.querySelectorAll('.ward-select').forEach(el => el.onchange = (e) => updateWardItem(e.target.dataset.id, 'surahId', e.target.value));
-            document.querySelectorAll('.vfrom-input').forEach(el => el.oninput = (e) => updateWardItem(e.target.dataset.id, 'vFrom', e.target.value));
-            document.querySelectorAll('.vto-input').forEach(el => el.oninput = (e) => updateWardItem(e.target.dataset.id, 'vTo', e.target.value));
-            document.querySelectorAll('.remove-ward').forEach(el => el.onclick = (e) => removeWardItem(e.target.dataset.id));
-            
-            const wardCountEl = document.getElementById('wardCount');
-            if (wardCountEl) wardCountEl.innerText = state.multiWard.length;
-        };
+    <ul>
+        <li>a) He</li>
+        <li>b) كلاهما بنفس الدرجة</li>
+        <li>c) C4H10</li>
+        <li>d) لا أحد</li>
+    </ul>
 
-        const renderSurahs = () => {
-            const container = document.getElementById('surah-container');
-            if (!container) return;
-            container.innerHTML = '';
-            surahs.forEach(surah => {
-                const s = state.progress[surah.id] || { saved: false, mastery: 0, badge: null };
-                const card = document.createElement('div');
-                card.className = `surah-card bg-white p-5 rounded-3xl shadow-sm relative ${s.saved ? 'border-emerald-200' : 'opacity-80'}`;
-                card.innerHTML = `
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="flex gap-3">
-                             <div class="text-3xl ${s.badge ? 'badge-pulse' : 'opacity-0'}">${s.badge || '⭐'}</div>
-                             <h3 class="text-xl font-bold quran-font">سورة ${surah.name}</h3>
-                        </div>
-                        <input type="checkbox" id="check-${surah.id}" ${s.saved ? 'checked' : ''} class="hidden custom-checkbox toggle-saved" data-id="${surah.id}">
-                        <label for="check-${surah.id}" class="cursor-pointer px-3 py-1.5 rounded-lg bg-gray-100 text-gray-500 text-[10px] font-bold">حفظ</label>
-                    </div>
-                    <input type="range" min="0" max="100" value="${s.mastery}" class="mastery-range w-full h-1 bg-gray-100 rounded-lg appearance-none accent-emerald-500" data-id="${surah.id}">
-                    <div class="mt-4 flex gap-2 no-print">
-                        <button class="flex-1 py-2 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-xl" onclick="alert('سورة ${surah.name}: ${surah.verses} آية')">معلومات 📖</button>
-                        <button class="p-2 bg-yellow-50 rounded-xl badge-trigger" data-id="${surah.id}">🎁</button>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
+    <div class="feedback">
+        الجسيمات الأكبر حجمًا تنحرف أكثر لأن حجمها يصبح غير مهمل تحت الضغط العالي.  
+        <strong>الإجابة: C4H10</strong>
+    </div>
+</div>
 
-            document.querySelectorAll('.toggle-saved').forEach(el => el.onchange = (e) => {
-                const id = e.target.dataset.id;
-                if (!state.progress[id]) state.progress[id] = { saved: false, mastery: 0 };
-                state.progress[id].saved = e.target.checked;
-                state.progress[id].mastery = e.target.checked ? 100 : 0;
-                renderSurahs(); updateGlobalProgress();
-            });
-            document.querySelectorAll('.mastery-range').forEach(el => el.onchange = (e) => {
-                const id = e.target.dataset.id;
-                if (!state.progress[id]) state.progress[id] = { saved: false, mastery: 0 };
-                state.progress[id].mastery = parseInt(e.target.value);
-                state.progress[id].saved = state.progress[id].mastery > 0;
-                renderSurahs(); updateGlobalProgress();
-            });
-            document.querySelectorAll('.badge-trigger').forEach(el => el.onclick = (e) => window.openBadgeModal(e.target.dataset.id));
-        };
+<!-- السؤال 6 -->
+<div class="question-box">
+    <h2>السؤال 6 — تفسير انخفاض عمود الزئبق</h2>
+    <p>يبين الشكل تغير ارتفاع عمود الزئبق في يوم رطب. انخفض الارتفاع من 760 إلى 748 mmHg. ما التفسير؟</p>
 
-        const updateGlobalProgress = () => {
-            const savedCount = Object.values(state.progress).filter(p => p.saved).length;
-            const pct = Math.round((savedCount / surahs.length) * 100);
-            document.getElementById('total-percent').innerText = pct + '%';
-            document.getElementById('total-progress-bar').style.width = pct + '%';
-        };
+    <img src="https://raw.githubusercontent.com/yourrepo/barometer.png" alt="barometer">
 
-        const updateWardItem = (id, field, val) => {
-            const idx = state.multiWard.findIndex(i => i.id == id);
-            if (idx !== -1) state.multiWard[idx][field] = parseInt(val);
-        };
+    <ul>
+        <li>a) الجاذبية انخفضت</li>
+        <li>b) كثافة الزئبق تغيرت</li>
+        <li>c) الضغط الجوي انخفض بسبب بخار الماء</li>
+        <li>d) الهواء أصبح أبرد</li>
+    </ul>
 
-        const removeWardItem = (id) => {
-            if (state.multiWard.length > 1) {
-                state.multiWard = state.multiWard.filter(i => i.id != id);
-                renderWardList();
-            }
-        };
+    <div class="feedback">
+        الرطوبة العالية تعني زيادة بخار الماء، مما يقلل الضغط الجوي.  
+        <strong>الإجابة: c</strong>
+    </div>
+</div>
 
-        // Cloud Operations
-        const saveToCloud = async () => {
-            if (!user) { showToast("يجب الاتصال أولاً"); return; }
-            showToast("جاري المزامنة...");
-            state.studentInfo.name = document.getElementById('studentName').value;
-            state.studentInfo.level = document.getElementById('studentLevel').value;
+<!-- السؤال 7 -->
+<div class="question-box">
+    <h2>السؤال 7 — تحليل الطاقة الحركية</h2>
+    <p>يبين الشكل التالي مقارنة بين سرعات غازات مختلفة لها نفس متوسط الطاقة الحركية. أي استنتاج صحيح؟</p>
 
-            try {
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'cloud_storage', 'v1', 'tracker');
-                await setDoc(docRef, { ...state, updatedAt: new Date().toISOString() });
-                showToast("تم الحفظ سحابياً بنجاح! ✨");
-            } catch (err) {
-                console.error("Save error", err);
-                showToast("خطأ أثناء الحفظ");
-            }
-        };
+    <img src="https://raw.githubusercontent.com/yourrepo/kinetic-energy.png" alt="kinetic energy">
 
-        const loadFromCloud = async () => {
-            try {
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'cloud_storage', 'v1', 'tracker');
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    state = { ...state, ...docSnap.data() };
-                    document.getElementById('studentName').value = state.studentInfo.name || '';
-                    document.getElementById('studentLevel').value = state.studentInfo.level || '';
-                    showToast("تم استعادة بياناتك 📥");
-                }
-                renderWardList();
-                renderSurahs();
-                updateGlobalProgress();
-                checkWardStatus();
-            } catch (err) {
-                console.error("Load error", err);
-                renderWardList(); renderSurahs(); updateGlobalProgress();
-            }
-        };
+    <ul>
+        <li>a) لها السرعة نفسها</li>
+        <li>b) الجسيمات الأخف أسرع</li>
+        <li>c) الجسيمات الأثقل أسرع</li>
+        <li>d) لها نفس الكتلة</li>
+    </ul>
 
-        const checkWardStatus = () => {
-            const btn = document.getElementById('btnCompleteWard');
-            const today = new Date().toDateString();
-            document.getElementById('streakCount').innerText = state.streak.streak;
-            document.getElementById('lastAchievementDate').innerText = state.streak.lastDate || "--";
-            if (state.streak.lastDate === today) {
-                btn.disabled = true; btn.innerText = "تم إنجاز الورد ✅"; btn.classList.add('opacity-50');
-            } else {
-                btn.disabled = false; btn.innerText = "تم إنجاز الورد كاملاً 🎉"; btn.classList.remove('opacity-50');
-            }
-        };
+    <div class="feedback">
+        عند ثبات KE: v ∝ 1/√m  
+        <strong>الجسيمات الأخف أسرع</strong>
+    </div>
+</div>
 
-        // Modal Controls
-        window.openBadgeModal = (id) => { currentSId = id; document.getElementById('badge-modal').classList.remove('hidden'); };
-        window.closeBadgeModal = () => document.getElementById('badge-modal').classList.add('hidden');
-        window.assignBadgeToSurah = (b) => {
-            if (currentSId) {
-                if (!state.progress[currentSId]) state.progress[currentSId] = { saved: false, mastery: 0 };
-                state.progress[currentSId].badge = b;
-                renderSurahs(); closeBadgeModal();
-            }
-        };
+<!-- السؤال 8 -->
+<div class="question-box">
+    <h2>السؤال 8 — ضغط الغاز</h2>
+    <p>يبين الشكل التالي أسطوانة غاز تم ضغطها حتى أصبح حجمها 1/5 من حجمها الأصلي عند ثبوت الحرارة. ماذا يحدث لعدد التصادمات؟</p>
 
-        // Events
-        document.getElementById('btnSaveCloud').onclick = saveToCloud;
-        document.getElementById('btnAddWard').onclick = () => {
-            state.multiWard.push({ id: Date.now(), surahId: 114, vFrom: 1, vTo: 5 });
-            renderWardList();
-        };
-        document.getElementById('btnCompleteWard').onclick = () => {
-            const today = new Date().toDateString();
-            if (state.streak.lastDate === today) return;
-            
-            const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
-            if (state.streak.lastDate === yesterday.toDateString()) {
-                state.streak.streak += 1;
-            } else {
-                state.streak.streak = 1;
-            }
-            
-            state.streak.lastDate = today;
-            checkWardStatus();
-            showToast("بطل! استمر في الحفظ 🔥");
-        };
+    <img src="https://raw.githubusercontent.com/yourrepo/compression.png" alt="compression">
 
-        // Auth
-        const initAuth = async () => {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (err) { console.error("Auth failed", err); }
-        };
+    <ul>
+        <li>a) يقل للنصف</li>
+        <li>b) يزيد 5 مرات</li>
+        <li>c) يبقى ثابتًا</li>
+        <li>d) يقل 5 مرات</li>
+    </ul>
 
-        onAuthStateChanged(auth, (u) => {
-            user = u;
-            if (user) {
-                document.getElementById('cloud-status').innerText = "متصل ✅";
-                loadFromCloud();
-            }
-        });
+    <div class="feedback">
+        تقليل الحجم إلى 1/5 يزيد عدد التصادمات ×5.  
+        <strong>الإجابة: b</strong>
+    </div>
+</div>
 
-        initAuth();
-    </script>
+<!-- السؤال 9 -->
+<div class="question-box">
+    <h2>السؤال 9 — انحراف الغازات القطبية</h2>
+    <p>يبين الشكل التالي مقارنة بين غازات قطبية وغير قطبية عند درجات حرارة منخفضة. أي غاز ينحرف أكثر عن المثالي؟</p>
+
+    <img src="https://raw.githubusercontent.com/yourrepo/polarity.png" alt="polarity">
+
+    <ul>
+        <li>a) N2</li>
+        <li>b) O2</li>
+        <li>c) He</li>
+        <li>d) H2O(g)</li>
+    </ul>
+
+    <div class="feedback">
+        بخار الماء قطبي جدًا، وقوى التجاذب فيه قوية، مما يزيد الانحراف.  
+        <strong>الإجابة: d</strong>
+    </div>
+</div>
+
+<!-- السؤال 10 -->
+<div class="question-box">
+    <h2>السؤال 10 — منحنى PV</h2>
+    <p>يبين الرسم البياني التالي منحنى PV لغاز حقيقي عند درجة حرارة منخفضة، حيث كان الضغط الفعلي أقل من المتوقع. ما السبب؟</p>
+
+    <img src="https://raw.githubusercontent.com/yourrepo/pv-curve.png" alt="pv curve">
+
+    <ul>
+        <li>a) حجم الجسيمات أصبح معدومًا</li>
+        <li>b) قوى التجاذب تقلل الضغط</li>
+        <li>c) التصادمات أصبحت مرنة</li>
+        <li>d) الغاز أصبح مثاليًا</li>
+    </ul>
+
+    <div class="feedback">
+        قوى التجاذب بين الجسيمات تسحبها نحو بعضها، مما يقلل الضغط الفعلي.  
+        <strong>الإجابة: b</strong>
+    </div>
+</div>
+
 </body>
 </html>
